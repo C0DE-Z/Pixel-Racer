@@ -1,6 +1,7 @@
 import pygame
 import sys
 import math
+from road import Road
 
 pygame.init()
 
@@ -18,6 +19,9 @@ world = pygame.Surface((WORLD_SIZE, WORLD_SIZE))
 for x in range(0, WORLD_SIZE, grass_texture.get_width()):
     for y in range(0, WORLD_SIZE, grass_texture.get_height()):
         world.blit(grass_texture, (x, y))
+
+# Add road system
+road = Road(WORLD_SIZE)
 
 # Camera offset
 camera_x = 0
@@ -146,6 +150,7 @@ while running:
     camera_y = max(0, min(camera_y, WORLD_SIZE - HEIGHT))
 
     screen.blit(world, (-camera_x, -camera_y))
+    road.draw(screen, camera_x, camera_y)
     
     screen_car_x = car_x - camera_x
     screen_car_y = car_y - camera_y
