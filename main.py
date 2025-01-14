@@ -1,7 +1,7 @@
 import pygame
 import sys
 import math
-from road import Road
+from road import Road  
 
 pygame.init()
 
@@ -19,9 +19,6 @@ world = pygame.Surface((WORLD_SIZE, WORLD_SIZE))
 for x in range(0, WORLD_SIZE, grass_texture.get_width()):
     for y in range(0, WORLD_SIZE, grass_texture.get_height()):
         world.blit(grass_texture, (x, y))
-
-# Add road system
-road = Road(WORLD_SIZE)
 
 # Camera offset
 camera_x = 0
@@ -84,6 +81,15 @@ def rot_center(image, angle, x, y):
 
 running = True
 clock = pygame.time.Clock()
+
+# After creating world surface, add:
+try:
+    print("Initializing road system...")
+    road = Road(WORLD_SIZE)
+    print("Road system initialized")
+except Exception as e:
+    print(f"Failed to create road: {e}")
+    sys.exit(1)
 
 while running:
     for event in pygame.event.get():
@@ -149,13 +155,19 @@ while running:
     camera_x = max(0, min(camera_x, WORLD_SIZE - WIDTH))
     camera_y = max(0, min(camera_y, WORLD_SIZE - HEIGHT))
 
+    # Clear screen with solid color first
+    screen.fill((34, 139, 34))  # Forest green background
+    
+    # Draw world and road in correct order
     screen.blit(world, (-camera_x, -camera_y))
     road.draw(screen, camera_x, camera_y)
     
+    # Draw car last
     screen_car_x = car_x - camera_x
     screen_car_y = car_y - camera_y
     rotated_car, rotated_rect = rot_center(car_image, car_angle + 90, screen_car_x, screen_car_y)
     screen.blit(rotated_car, rotated_rect)
+
     speed_text = font.render(f"{int(calculate_mph(car_velocity))} MPH", True, (255, 255, 255))
     gear_text = font.render(f"GEAR: {current_gear}", True, (255, 255, 255))
     screen.blit(speed_text, (10, 10))
