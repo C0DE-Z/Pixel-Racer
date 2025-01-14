@@ -4,15 +4,13 @@ import math
 
 pygame.init()
 
-WIDTH, HEIGHT = 1100, 900
+WIDTH, HEIGHT = 1000, 900
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption("Pixel Racer")
 
-# Add grass texture
-grass_texture = pygame.image.load('./assests/grass.png')  # You'll need to add a grass texture image
+grass_texture = pygame.image.load('./assests/grass.png') 
 grass_texture = pygame.transform.scale(grass_texture, (64, 64))  # Adjust size as needed
 
-# Create a larger background surface for scrolling
 WORLD_SIZE = 5000
 world = pygame.Surface((WORLD_SIZE, WORLD_SIZE))
 
