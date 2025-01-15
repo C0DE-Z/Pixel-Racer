@@ -12,7 +12,7 @@ pygame.display.set_caption("Pixel Racer")
 grass_texture = pygame.image.load('./assests/grass.png') 
 grass_texture = pygame.transform.scale(grass_texture, (64, 64))  # Adjust size as needed
 
-WORLD_SIZE = 5000
+WORLD_SIZE = 10000
 world = pygame.Surface((WORLD_SIZE, WORLD_SIZE))
 
 # Fill world with tiled grass texture
@@ -51,6 +51,23 @@ car_lateral_velocity = 0
 
 font = pygame.font.Font(None, 36)
 
+# Add after other car variables
+gear_shift_cooldown = 0
+gear_shift_delay = 15  # frames
+gear_efficiency_ranges = {
+    1: (0, 25),      # MPH ranges for each gear
+    2: (20, 45),
+    3: (40, 65),
+    4: (60, 85),
+    5: (80, 120)
+}
+downshift_speed_retention = 0.85  # Retain 85% of speed when downshifting
+
+# Add after other variables
+lap_count = 0
+last_finish_check = False
+finish_line_cooldown = 0
+
 def calculate_mph(velocity):
     return abs(velocity * 20)  
 
@@ -82,10 +99,12 @@ def rot_center(image, angle, x, y):
 running = True
 clock = pygame.time.Clock()
 
-# After creating world surface, add:
 try:
     print("Initializing road system...")
     road = Road(WORLD_SIZE)
+    # Set initial car position to track start
+    car_x, car_y = road.start_position
+    car_rect.center = road.start_position
     print("Road system initialized")
 except Exception as e:
     print(f"Failed to create road: {e}")
@@ -96,10 +115,26 @@ while running:
         if event.type == pygame.QUIT:
             running = False
         elif event.type == pygame.KEYDOWN:
-            if event.key == pygame.K_LSHIFT and current_gear < max_gears:
-                current_gear += 1
-            elif event.key == pygame.K_LCTRL and current_gear > 1:
+            if event.key == pygame.K_LSHIFT and current_gear < max_gears and gear_shift_cooldown <= 0:
+                current_speed_mph = calculate_mph(car_velocity)
+                min_speed_for_shift = gear_efficiency_ranges[current_gear][1] * 0.8
+                
+                if current_speed_mph >= min_speed_for_shift:
+                    current_gear += 1
+                    gear_shift_cooldown = gear_shift_delay
+                    print(f"Shifted up to gear {current_gear}")
+                else:
+                    print(f"Speed too low for upshift: {current_speed_mph} MPH")
+                    
+            elif event.key == pygame.K_LCTRL and current_gear > 1 and gear_shift_cooldown <= 0:
+                car_velocity *= downshift_speed_retention
                 current_gear -= 1
+                gear_shift_cooldown = gear_shift_delay
+                print(f"Shifted down to gear {current_gear}")
+
+    # Update gear shift cooldown
+    if gear_shift_cooldown > 0:
+        gear_shift_cooldown -= 1
 
     keys = pygame.key.get_pressed()
     
@@ -110,6 +145,18 @@ while running:
     speed_factor = abs(car_velocity) / car_max_speed
     current_rotation_speed = car_base_rotation_speed / (1 + speed_factor * 2)
     current_rotation_speed = max(current_rotation_speed, car_min_rotation_speed)
+
+    if keys[pygame.K_ESCAPE]:
+        game_running = False
+    if keys[pygame.K_r]:
+        car_x, car_y = road.start_position
+        car_rect.center = road.start_position
+        car_velocity = 0
+        car_angle = 0
+        lap_count = 0
+    if keys[pygame.K_q]:
+        # Redraw the map 
+        road.generate_road()
 
     if keys[pygame.K_a] and car_velocity != 0:
         car_angle += current_rotation_speed
@@ -135,6 +182,20 @@ while running:
         car_grip, keys[pygame.K_SPACE]
     )
 
+    # Get current gear efficiency
+    min_speed, max_speed = gear_efficiency_ranges[current_gear]
+    current_speed_mph = calculate_mph(car_velocity)
+    
+    # Apply gear efficiency to acceleration
+    gear_efficiency = 1.0
+    if current_speed_mph < min_speed:
+        gear_efficiency = 0.5  # Engine struggling at too low speed
+    elif current_speed_mph > max_speed:
+        gear_efficiency = 0.7  # Engine straining at too high speed
+        
+    # Apply gear efficiency to acceleration
+    gear_acceleration = car_acceleration * gear_ratios[current_gear] * gear_efficiency
+
     # Update position with drift physics
     angle_rad = math.radians(car_angle)
     car_x += (car_velocity * math.cos(angle_rad) - car_lateral_velocity * math.sin(angle_rad))
@@ -155,6 +216,17 @@ while running:
     camera_x = max(0, min(camera_x, WORLD_SIZE - WIDTH))
     camera_y = max(0, min(camera_y, WORLD_SIZE - HEIGHT))
 
+    # Check finish line crossing with cooldown
+    if finish_line_cooldown > 0:
+        finish_line_cooldown -= 1
+    else:
+        crossed_finish = road.check_finish_line(car_x, car_y)
+        if crossed_finish and not last_finish_check:
+            lap_count += 1
+            finish_line_cooldown = 60  # Prevent multiple counts
+            print(f"Lap {lap_count} completed!")
+        last_finish_check = crossed_finish
+
     # Clear screen with solid color first
     screen.fill((34, 139, 34))  # Forest green background
     
@@ -173,8 +245,13 @@ while running:
     screen.blit(speed_text, (10, 10))
     screen.blit(gear_text, (10, 50))
 
+    # Add lap counter to display
+    lap_text = font.render(f"LAP: {lap_count}", True, (255, 255, 255))
+    screen.blit(lap_text, (10, 90))
+
     pygame.display.flip()
     clock.tick(60)
+    
 
 pygame.quit()
 sys.exit()
