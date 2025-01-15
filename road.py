@@ -5,7 +5,7 @@ import math
 class Road:
     def __init__(self, world_size):
         self.world_size = world_size
-        self.tile_size = 256  # Reduced from 256 * 2
+        self.tile_size = 256 * 1.5
         self.road_surface = pygame.Surface((world_size, world_size), pygame.SRCALPHA)
         self.start_position = None  # Add this line
         self.finish_position = None  # Add this line
@@ -20,9 +20,9 @@ class Road:
             self.finish = pygame.image.load('./assests/finish_line.png')
             
             # Create flipped versions
-            self.corner_flip_x = pygame.transform.flip(self.corner, True, False)
-            self.corner_flip_y = pygame.transform.flip(self.corner, False, True)
-            self.corner_flip_xy = pygame.transform.flip(self.corner, True, True)
+            self.corner_flip_x = pygame.transform.flip(self.corner, 1, 0)
+            self.corner_flip_y = pygame.transform.flip(self.corner, 0, 1)
+            self.corner_flip_xy = pygame.transform.flip(self.corner, 1, 1)
             
             # Scale all versions
             self.straight = pygame.transform.scale(self.straight, (self.tile_size, self.tile_size))
@@ -120,16 +120,16 @@ class Road:
                 current_direction = 2  # Down
 
             if last_direction is not None and last_direction != current_direction:
-                # Updated corner rotations with flips ()
+                # Updated corner rotations with correct orientations
                 corner_configs = {
-                    (0, 1): (self.corner, 0),         # Up to Right
-                    (1, 2): (self.corner_flip_x, 90), # Right to Down
-                    (2, 3): (self.corner_flip_y, 90), # Down to Left
-                    (3, 0): (self.corner_flip_xy, 0), # Left to Up
-                    (1, 0): (self.corner_flip_y, 90), # Right to Up
-                    (2, 1): (self.corner_flip_xy, 180), # Down to Right
-                    (3, 2): (self.corner, 0),         # Left to Down
-                    (0, 3): (self.corner_flip_x, 270) # Up to Left
+                    (0, 1): (self.corner, 0),          # Up to Right
+                    (1, 2): (self.corner_flip_x, 270), # Right to Down (fixed)
+                    (2, 3): (self.corner, 180),        # Down to Left
+                    (3, 0): (self.corner_flip_y, 90),  # Left to Up
+                    (1, 0): (self.corner, 90),         # Right to Up
+                    (2, 1): (self.corner_flip_y, 270), # Down to Right
+                    (3, 2): (self.corner_flip_x, 90),  # Left to Down
+                    (0, 3): (self.corner, 270)         # Up to Left
                 }
                 
                 if (last_direction, current_direction) in corner_configs:
