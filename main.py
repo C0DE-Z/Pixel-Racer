@@ -125,6 +125,13 @@ try:
     # Set initial car position to track start
     car_x, car_y = road.start_position
     car_rect.center = road.start_position
+    # Ensure the car faces the correct direction
+    if road.track_pieces.get((car_x, car_y)):
+        piece = road.track_pieces[(car_x, car_y)]
+        if piece['type'] == 'straight':
+            car_angle = piece['rotation']
+        elif piece['type'] == 'corner':
+            car_angle = piece['rotation'] + 90
     print("Road system finished")
 except Exception as e:
     print(f"Failed to create road: {e}")

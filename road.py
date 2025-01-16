@@ -3,6 +3,7 @@ import random
 import math
 import json
 
+# Creates the randomly made tracks for the car to drive on, and the start position of the car
 class Road:
     def __init__(self, world_size):
         self.world_size = world_size
@@ -114,7 +115,7 @@ class Road:
     def generate_road(self):
         self.road_surface.fill((0, 0, 0, 0))
         grid_size = self.world_size // self.tile_size
-        max_attempts = 100000  # Normally takes a lot of attempts 
+        max_attempts = math.inf  # Limit the number of attempts (for testing)
         attempts = 0
 
         while attempts < max_attempts:
@@ -122,22 +123,18 @@ class Road:
                 track_points = []
                 self.occupied_cells = set()
                 
-                # Set starting position
                 start_x = grid_size // 4 + 5
                 start_y = grid_size // 4 + 5
                 current_x = start_x
                 current_y = start_y
                 
-                # Increase the number of segments
-                num_segments = random.randint(10, 15)
+                num_segments = random.randint(10, 15)  # Increase the number of segments
                 direction = random.randint(0, 3)
                 
                 for _ in range(num_segments):
-                    # Shorten segment lengths
-                    segment_length = random.randint(3, 8)
+                    segment_length = random.randint(3, 8)  # Shorten segment lengths
                     for _ in range(segment_length):
                         track_points.append((current_x, current_y))
-                        # Move in current direction
                         if direction == 0:
                             current_y -= 1
                         elif direction == 1:
@@ -147,7 +144,6 @@ class Road:
                         else:
                             current_x -= 1
                         
-                        # Check boundaries
                         if not (0 <= current_x < grid_size and 0 <= current_y < grid_size):
                             raise ValueError("Track went off screen")
                     
@@ -155,19 +151,16 @@ class Road:
                     turn_choice = random.choices([-1, 0, 1], weights=[3, 1, 3])[0]
                     direction = (direction + turn_choice) % 4
                 
-                # Attempt to connect back to start
                 if not self.connect_to_start(track_points, start_x, start_y, current_x, current_y):
                     print(f"Failed to connect track to start, attempt {attempts + 1}")
                     attempts += 1
                     continue
 
-                # Validate track before accepting it
                 if not self.is_valid_track(track_points, start_x, start_y):
                     print(f"Invalid track generated, attempt {attempts + 1}")
                     attempts += 1
                     continue
 
-                # Place track pieces if valid
                 self.place_track_pieces(track_points)
                 self.store_valid_track(track_points)
                 print(f"Valid track generated after {attempts + 1} attempts")
@@ -288,6 +281,11 @@ class Road:
                 pos, piece = nearest
                 pygame.draw.rect(self.road_surface, (255, 255, 0, 128),
                                  (pos[0], pos[1], self.tile_size, self.tile_size), 2)
+                # Display piece type and rotation
+                piece_info = f"{piece['direction']} ({piece['rotation']}°)"
+                font = pygame.font.Font(None, 24)
+                piece_text = font.render(piece_info, True, (255, 255, 255))
+                screen.blit(piece_text, (pos[0] - camera_x, pos[1] - camera_y - 20))
 
         screen.blit(self.road_surface, (-camera_x, -camera_y))
 
