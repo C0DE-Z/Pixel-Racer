@@ -1,30 +1,28 @@
 import pygame
 import random
 import math
-# Creates the randomly made tracks for the car to drive on, and the start position of the car
+import json
+
 class Road:
     def __init__(self, world_size):
         self.world_size = world_size
         self.tile_size = 256 * 1.5
         self.road_surface = pygame.Surface((world_size, world_size), pygame.SRCALPHA)
-        self.start_position = None  # Add this line
-        self.finish_position = None  # Add this line
-        
+        self.start_position = None
+        self.finish_position = None
+        self.track_pieces = {}
         try:
             print("Loading road assets...")
-            # Create Normal assests from folder 
             self.straight = pygame.image.load('./assests/road_Straight.png')
             self.corner = pygame.image.load('./assests/road_Corner.png')
             self.tjunction = pygame.image.load('./assests/road_T.png')
             self.crossroad = pygame.image.load('./assests/road_Cross.png')
             self.finish = pygame.image.load('./assests/finish_line.png')
             
-            # Create flipped versions
             self.corner_flip_x = pygame.transform.flip(self.corner, 1, 0)
             self.corner_flip_y = pygame.transform.flip(self.corner, 0, 1)
             self.corner_flip_xy = pygame.transform.flip(self.corner, 1, 1)
             
-            # Scale all versions
             self.straight = pygame.transform.scale(self.straight, (self.tile_size, self.tile_size))
             self.corner = pygame.transform.scale(self.corner, (self.tile_size, self.tile_size))
             self.corner_flip_x = pygame.transform.scale(self.corner_flip_x, (self.tile_size, self.tile_size))
@@ -40,62 +38,189 @@ class Road:
             raise
 
         print("Generating road layout...")
+        self.load_config()
         self.generate_road()
         print("Road generation complete")
     
-    def generate_road(self):
-        grid_size = self.world_size // self.tile_size
-        start_x = grid_size // 3
-        start_y = grid_size // 3
-        
-        # Store start position in pixels
-        self.start_position = (start_x * self.tile_size + self.tile_size // 2,
-                             start_y * self.tile_size + self.tile_size // 2)
-        
-        min_straight = 5  
-        max_straight = 15
-        track_points = []
-        current_x = start_x
-        current_y = start_y
-        direction = 1  
-        
-        initial_x = current_x
-        initial_y = current_y
-        
-        # Generate main track segments
-        for segment in range(4):  # Reduced to 4 
-            straight_length = random.randint(min_straight, max_straight)
-            for _ in range(straight_length):
-                track_points.append((current_x, current_y))
-                if direction == 0:    # Up
-                    current_y -= 1
-                elif direction == 1:  # Right
-                    current_x += 1
-                elif direction == 2:  # Down
-                    current_y += 1
-                else:                # Left
-                    current_x -= 1
-            
-            direction = (direction + 1) % 4
-        
-        # Connect back to start 
-        while current_x != initial_x or current_y != initial_y:
-            track_points.append((current_x, current_y))
-            if current_x > initial_x:
-                current_x -= 1
-            elif current_x < initial_x:
-                current_x += 1
-            elif current_y > initial_y:
-                current_y -= 1
-            elif current_y < initial_y:
-                current_y += 1
+    def load_config(self):
+        try:
+            with open('./assests/road_config.json', 'r') as f:
+                self.config = json.load(f)
+        except FileNotFoundError:
+            print("Config not found, using defaults")
+            self.config = {
+                "corner_rotations": {
+                    "up_right": 0, "right_down": 90,
+                    "down_left": 180, "left_up": 270,
+                    "right_up": 0, "down_right": 90,
+                    "left_down": 180, "up_left": 270
+                },
+                "corner_flips": {
+                    "up_right": False, "right_down": False,
+                    "down_left": False, "left_up": False,
+                    "right_up": True, "down_right": True,
+                    "left_down": True, "up_left": True
+                }
+            }
+            self.save_config()
 
-        # Store finish line position (last straight piece before connecting back)
+    def save_config(self):
+        with open('./assests/road_config.json', 'w') as f:
+            json.dump(self.config, f, indent=4)
+
+    def adjust_rotation(self, corner_type, amount):
+        self.config["corner_rotations"][corner_type] = \
+            (self.config["corner_rotations"][corner_type] + amount) % 360
+        self.save_config()
+        self.generate_road()
+
+    def toggle_flip(self, corner_type):
+        self.config["corner_flips"][corner_type] = \
+            not self.config["corner_flips"][corner_type]
+        self.save_config()
+        self.generate_road()
+
+    def is_valid_track(self, track_points, start_x, start_y):
+        def neighbors(cell):
+            x, y = cell
+            for nx, ny in [(x+1,y), (x-1,y), (x,y+1), (x,y-1)]:
+                if (nx, ny) in track_set:
+                    yield (nx, ny)
+
+        if len(track_points) < 10:
+            return False
+
+        track_set = set(track_points)
+        visited = set()
+        queue = [track_points[0]]
+        while queue:
+            current = queue.pop(0)
+            visited.add(current)
+            for n in neighbors(current):
+                if n not in visited:
+                    queue.append(n)
+
+        if len(visited) != len(track_points):
+            return False
+
+        end_x, end_y = track_points[-1]
+        dist_to_start = abs(end_x - start_x) + abs(end_y - start_y)
+        
+        if dist_to_start > 2:
+            return False
+        
+        return True
+
+    def generate_road(self):
+        self.road_surface.fill((0, 0, 0, 0))
+        grid_size = self.world_size // self.tile_size
+        max_attempts = 100000  # Normally takes a lot of attempts 
+        attempts = 0
+
+        while attempts < max_attempts:
+            try:
+                track_points = []
+                self.occupied_cells = set()
+                
+                # Set starting position
+                start_x = grid_size // 4 + 5
+                start_y = grid_size // 4 + 5
+                current_x = start_x
+                current_y = start_y
+                
+                # Increase the number of segments
+                num_segments = random.randint(10, 15)
+                direction = random.randint(0, 3)
+                
+                for _ in range(num_segments):
+                    # Shorten segment lengths
+                    segment_length = random.randint(3, 8)
+                    for _ in range(segment_length):
+                        track_points.append((current_x, current_y))
+                        # Move in current direction
+                        if direction == 0:
+                            current_y -= 1
+                        elif direction == 1:
+                            current_x += 1
+                        elif direction == 2:
+                            current_y += 1
+                        else:
+                            current_x -= 1
+                        
+                        # Check boundaries
+                        if not (0 <= current_x < grid_size and 0 <= current_y < grid_size):
+                            raise ValueError("Track went off screen")
+                    
+                    # Increase the likelihood of turns
+                    turn_choice = random.choices([-1, 0, 1], weights=[3, 1, 3])[0]
+                    direction = (direction + turn_choice) % 4
+                
+                # Attempt to connect back to start
+                if not self.connect_to_start(track_points, start_x, start_y, current_x, current_y):
+                    print(f"Failed to connect track to start, attempt {attempts + 1}")
+                    attempts += 1
+                    continue
+
+                # Validate track before accepting it
+                if not self.is_valid_track(track_points, start_x, start_y):
+                    print(f"Invalid track generated, attempt {attempts + 1}")
+                    attempts += 1
+                    continue
+
+                # Place track pieces if valid
+                self.place_track_pieces(track_points)
+                self.store_valid_track(track_points)
+                print(f"Valid track generated after {attempts + 1} attempts")
+                return True
+
+            except ValueError as e:
+                print(f"Track generation failed: {e}")
+                attempts += 1
+                continue
+
+        print(f"Failed to generate valid track after {max_attempts} attempts")
+        return False
+
+    def connect_to_start(self, track_points, start_x, start_y, current_x, current_y):
+        max_connect_attempts = 50
+        attempt = 0
+        
+        while attempt < max_connect_attempts:
+            if abs(current_x - start_x) <= 1 and abs(current_y - start_y) <= 1:
+                if (current_x, current_y) != (start_x, start_y):
+                    track_points.append((start_x, start_y))
+                return True
+                
+            next_x, next_y = current_x, current_y
+            
+            if abs(current_x - start_x) > 0 and abs(current_y - start_y) > 0:
+                test_x = current_x + (-1 if current_x > start_x else 1)
+                test_y = current_y + (-1 if current_y > start_y else 1)
+                if (test_x, test_y) not in self.occupied_cells:
+                    next_x, next_y = test_x, test_y
+            elif abs(current_x - start_x) > abs(current_y - start_y):
+                next_x += -1 if current_x > start_x else 1
+            else:
+                next_y += -1 if current_y > start_y else 1
+                
+            if (next_x, next_y) not in self.occupied_cells:
+                track_points.append((next_x, next_y))
+                self.occupied_cells.add((next_x, next_y))
+                current_x, current_y = next_x, next_y
+            else:
+                attempt += 1
+
+        raise ValueError("Unable to connect track to start")
+
+    def place_track_pieces(self, track_points):
+        self.start_position = (track_points[0][0] * self.tile_size + self.tile_size // 2,
+                             track_points[0][1] * self.tile_size + self.tile_size // 2)
+
         self.finish_position = (track_points[-1][0] * self.tile_size + self.tile_size // 2,
                               track_points[-1][1] * self.tile_size + self.tile_size // 2)
 
-        # Place track pieces with corrected rotations
         last_direction = None
+        self.track_pieces = {}
         for i in range(len(track_points)):
             x, y = track_points[i]
             next_x, next_y = track_points[(i + 1) % len(track_points)]
@@ -103,55 +228,176 @@ class Road:
             pixel_x = x * self.tile_size
             pixel_y = y * self.tile_size
 
-            # Add finish line at the last piece before loop closure
             if i == len(track_points) - 1:
                 rotation = 90 if current_direction in [0, 2] else 0
                 rotated_finish = pygame.transform.rotate(self.finish, rotation)
                 self.road_surface.blit(rotated_finish, (pixel_x, pixel_y))
             
-            # Calculate current direction
             if next_x > x:
-                current_direction = 1  # Right
+                current_direction = 1
             elif next_x < x:
-                current_direction = 3  # Left
+                current_direction = 3
             elif next_y > y:
-                current_direction = 0  # Up
+                current_direction = 0
             else:
-                current_direction = 2  # Down
+                current_direction = 2
 
             if last_direction is not None and last_direction != current_direction:
-                # Updated corner rotations with correct orientations
-                corner_configs = {
-                    (0, 1): (self.corner, 0),          # Up to Right
-                    (1, 2): (self.corner_flip_x, 270), # Right to Down (fixed)
-                    (2, 3): (self.corner, 180),        # Down to Left
-                    (3, 0): (self.corner_flip_y, 90),  # Left to Up
-                    (1, 0): (self.corner, 90),         # Right to Up
-                    (2, 1): (self.corner_flip_y, 270), # Down to Right
-                    (3, 2): (self.corner_flip_x, 90),  # Left to Down
-                    (0, 3): (self.corner, 270)         # Up to Left
+                direction_map = {
+                    (0, 1): "up_right",
+                    (1, 2): "right_down",
+                    (2, 3): "down_left",
+                    (3, 0): "left_up",
+                    (1, 0): "right_up",
+                    (2, 1): "down_right",
+                    (3, 2): "left_down",
+                    (0, 3): "up_left",
+                    (2, 0): "down_up",
+                    (0, 2): "up_down",
+                    (1, 3): "right_left",
+                    (3, 1): "left_right"
                 }
-                
-                if (last_direction, current_direction) in corner_configs:
-                    corner_img, rotation = corner_configs[(last_direction, current_direction)]
-                    rotated_corner = pygame.transform.rotate(corner_img, rotation)
-                    self.road_surface.blit(rotated_corner, (pixel_x, pixel_y))
 
+                corner_type = direction_map.get((last_direction, current_direction), "up_right")
+                use_flip = self.config["corner_flips"][corner_type]
+                rotation = self.config["corner_rotations"][corner_type]
+                
+                corner_img = self.corner_flip_x if use_flip else self.corner
+                rotated_corner = pygame.transform.rotate(corner_img, rotation)
+                self.road_surface.blit(rotated_corner, (pixel_x, pixel_y))
+                self.track_pieces[(pixel_x, pixel_y)] = {
+                    'type': 'corner',
+                    'direction': direction_map.get((last_direction, current_direction), "up_right"),
+                    'rotation': rotation
+                }
             else:
-                # Straight pieces
-                rotation = 0 if current_direction in [0, 2] else 90
+                rotation = 90 if current_direction in [1, 3] else 0
                 rotated_straight = pygame.transform.rotate(self.straight, rotation)
                 self.road_surface.blit(rotated_straight, (pixel_x, pixel_y))
+                self.track_pieces[(pixel_x, pixel_y)] = {
+                    'type': 'straight',
+                    'rotation': rotation
+                }
             
             last_direction = current_direction
 
-    def draw(self, screen, camera_x, camera_y):
+    def draw(self, screen, camera_x, camera_y, car_x=None, car_y=None):
+        if self.is_debug_visible() and car_x is not None and car_y is not None:
+            nearest = self.get_nearest_piece(car_x, car_y)
+            if nearest:
+                pos, piece = nearest
+                pygame.draw.rect(self.road_surface, (255, 255, 0, 128),
+                                 (pos[0], pos[1], self.tile_size, self.tile_size), 2)
+
         screen.blit(self.road_surface, (-camera_x, -camera_y))
 
     def check_finish_line(self, car_x, car_y):
         if self.finish_position:
-            # Check if car is within finish line area
             finish_x, finish_y = self.finish_position
             distance = math.sqrt((car_x - finish_x)**2 + (car_y - finish_y)**2)
             return distance < self.tile_size // 2
         return False
+
+    def get_nearest_piece(self, car_x, car_y):
+        nearest = None
+        min_dist = float('inf')
+        
+        for pos, piece in self.track_pieces.items():
+            dist = ((car_x - pos[0])**2 + (car_y - pos[1])**2)**0.5
+            if dist < min_dist and dist < self.tile_size * 1.5:
+                min_dist = dist
+                nearest = (pos, piece)
+        
+        return nearest
+
+    def rotate_piece_at_position(self, pos, amount):
+        if pos in self.track_pieces:
+            piece = self.track_pieces[pos]
+            if piece['type'] == 'corner':
+                piece['rotation'] = (piece['rotation'] + amount) % 360
+                rotated_corner = pygame.transform.rotate(self.corner, piece['rotation'])
+                self.road_surface.blit(rotated_corner, pos)
+            else:
+                piece['rotation'] = (piece['rotation'] + amount) % 180
+                rotated_straight = pygame.transform.rotate(self.straight, piece['rotation'])
+                self.road_surface.blit(rotated_straight, pos)
+
+    def toggle_debug(self):
+        if not hasattr(self, 'debug'):
+            self.debug = False
+        self.debug = not self.debug
+        return self.debug
+
+    def is_debug_visible(self):
+        return getattr(self, 'debug', False)
+
+    def is_on_track(self, x, y):
+        cell_x = int(x // self.tile_size) * self.tile_size
+        cell_y = int(y // self.tile_size) * self.tile_size
+        if (cell_x, cell_y) not in self.track_pieces:
+            return False
+
+        center_x = cell_x + self.tile_size / 2
+        center_y = cell_y + self.tile_size / 2
+        dx = x - center_x
+        dy = y - center_y
+        distance = math.sqrt(dx*dx + dy*dy)
+        
+        return distance <= (self.tile_size * 0.6)
+
+    def store_valid_track(self, track_points):
+        """Store valid tracks for future loading."""
+        import time
+        import os
+        os.makedirs('./assests/tracks', exist_ok=True)
+        
+        track_data = {
+            "start_position": self.start_position,
+            "finish_position": self.finish_position,
+            "track_pieces": [
+                {
+                    "position": (x, y),
+                    "type": self.track_pieces[(x * self.tile_size, y * self.tile_size)]['type'],
+                    "rotation": self.track_pieces[(x * self.tile_size, y * self.tile_size)]['rotation']
+                }
+                for x, y in track_points
+            ]
+        }
+        
+        filename = f"./assests/tracks/track_{int(time.time())}.json"
+        with open(filename, 'w') as f:
+            json.dump(track_data, f, indent=4)
+        print(f"Saved track to {filename}")
+
+    def load_saved_track(self, index=0):
+        """Load a saved track by index and place pieces."""
+        try:
+            with open(f'./assests/tracks/track_{index}.json', 'r') as f:
+                track_data = json.load(f)
+            
+            self.start_position = tuple(track_data["start_position"])
+            self.finish_position = tuple(track_data["finish_position"])
+            self.road_surface.fill((0, 0, 0, 0))
+            self.track_pieces = {}
+            
+            for piece in track_data["track_pieces"]:
+                x, y = piece["position"]
+                pixel_x = x * self.tile_size
+                pixel_y = y * self.tile_size
+                piece_type = piece["type"]
+                rotation = piece["rotation"]
+                
+                if piece_type == "straight":
+                    rotated_piece = pygame.transform.rotate(self.straight, rotation)
+                elif piece_type == "corner":
+                    rotated_piece = pygame.transform.rotate(self.corner, rotation)
+                else:
+                    continue  # Skip unknown types
+                
+                self.road_surface.blit(rotated_piece, (pixel_x, pixel_y))
+                self.track_pieces[(pixel_x, pixel_y)] = {
+                    'type': piece_type,
+                    'rotation': rotation
+                }
+        except (FileNotFoundError, IndexError, json.JSONDecodeError):
+            print("No saved track found or invalid index")

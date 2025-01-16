@@ -1,0 +1,30 @@
+{
+    "corner_rotations": {
+        "up_right": 0,
+        "right_down": 270,
+        "down_left": 270,
+        "left_up": 270,
+        "right_up": 90,
+        "down_right": 270,
+        "left_down": 0,
+        "up_left": 90,
+        "down_up": 270,
+        "up_down": 270,
+        "right_left": 90,
+        "left_right": 270
+    },
+    "corner_flips": {
+        "up_right": false,
+        "right_down": false,
+        "down_left": false,
+        "left_up": true,
+        "right_up": true,
+        "down_right": false,
+        "left_down": false,
+        "up_left": false,
+        "down_up": false,
+        "up_down": false,
+        "right_left": false,
+        "left_right": false
+    }
+}

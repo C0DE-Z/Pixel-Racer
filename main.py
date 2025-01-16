@@ -2,6 +2,8 @@ import pygame
 import sys
 import math
 from road import Road  
+from title_screen import TitleScreen
+from win_screen import WinScreen
 
 pygame.init()
 
@@ -68,6 +70,24 @@ lap_count = 0
 last_finish_check = False
 finish_line_cooldown = 0
 
+# Add after other variables
+current_corner_type = "up_right"
+corner_types = ["up_right", "right_down", "down_left", "left_up",
+                "right_up", "down_right", "left_down", "up_left"]
+
+MENU = 0
+PLAYING = 1
+WIN_SCREEN = 2  # Add new state
+
+game_state = MENU
+title_screen = TitleScreen(screen, WIDTH, HEIGHT)
+win_screen = WinScreen(screen, WIDTH, HEIGHT)
+
+lap_count = 0
+LAPS_TO_COMPLETE = 3
+race_start_time = None
+final_time = 0.0
+
 def calculate_mph(velocity):
     return abs(velocity * 20)  
 
@@ -100,17 +120,56 @@ running = True
 clock = pygame.time.Clock()
 
 try:
-    print("Initializing road system...")
+    print("Starting road system...")
     road = Road(WORLD_SIZE)
     # Set initial car position to track start
     car_x, car_y = road.start_position
     car_rect.center = road.start_position
-    print("Road system initialized")
+    print("Road system finished")
 except Exception as e:
     print(f"Failed to create road: {e}")
     sys.exit(1)
 
 while running:
+    if game_state == MENU:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                running = False
+            elif event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
+                game_state = PLAYING
+
+        title_screen.draw()
+        pygame.display.flip()
+        clock.tick(60)
+        continue
+    
+    elif game_state == WIN_SCREEN:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                running = False
+            else:
+                action = win_screen.handle_input(event)
+                if action == "replay":
+                    lap_count = 0
+                    race_start_time = None
+                    car_x, car_y = road.start_position
+                    car_rect.center = road.start_position
+                    car_velocity = 0
+                    game_state = PLAYING
+                elif action == "new":
+                    lap_count = 0
+                    race_start_time = None
+                    road.generate_road()
+                    car_x, car_y = road.start_position
+                    car_rect.center = road.start_position
+                    car_velocity = 0
+                    game_state = PLAYING
+        
+        win_screen.draw(final_time)
+        pygame.display.flip()
+        clock.tick(60)
+        continue
+
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
@@ -132,6 +191,23 @@ while running:
                 gear_shift_cooldown = gear_shift_delay
                 print(f"Shifted down to gear {current_gear}")
 
+            # Corner rotation controls
+            if event.key == pygame.K_TAB:
+                # Cycle through corner types
+                current_index = corner_types.index(current_corner_type)
+                current_corner_type = corner_types[(current_index + 1) % len(corner_types)]
+            elif event.key == pygame.K_LEFT:
+                road.adjust_rotation(current_corner_type, -90)
+            elif event.key == pygame.K_RIGHT:
+                road.adjust_rotation(current_corner_type, 90)
+            elif event.key == pygame.K_f:
+                road.toggle_flip(current_corner_type)
+            elif event.key == pygame.K_h:
+                if road.toggle_debug():
+                    print("Debug mode enabled")
+                else:
+                    print("Debug mode disabled")
+
     # Update gear shift cooldown
     if gear_shift_cooldown > 0:
         gear_shift_cooldown -= 1
@@ -141,7 +217,6 @@ while running:
     gear_acceleration = car_acceleration * gear_ratios[current_gear]
     current_max_speed = car_max_speed * gear_ratios[current_gear]
 
-    # Calculate dynamic rotation speed based on velocity
     speed_factor = abs(car_velocity) / car_max_speed
     current_rotation_speed = car_base_rotation_speed / (1 + speed_factor * 2)
     current_rotation_speed = max(current_rotation_speed, car_min_rotation_speed)
@@ -154,7 +229,8 @@ while running:
         car_velocity = 0
         car_angle = 0
         lap_count = 0
-    if keys[pygame.K_q]:
+        
+    if keys[pygame.K_q] and road.is_debug_visible():
         # Redraw the map 
         road.generate_road()
 
@@ -216,6 +292,10 @@ while running:
     camera_x = max(0, min(camera_x, WORLD_SIZE - WIDTH))
     camera_y = max(0, min(camera_y, WORLD_SIZE - HEIGHT))
 
+    # Start the race timer when player first moves
+    if race_start_time is None and abs(car_velocity) > 0.1:
+        race_start_time = pygame.time.get_ticks()
+
     # Check finish line crossing with cooldown
     if finish_line_cooldown > 0:
         finish_line_cooldown -= 1
@@ -223,16 +303,25 @@ while running:
         crossed_finish = road.check_finish_line(car_x, car_y)
         if crossed_finish and not last_finish_check:
             lap_count += 1
-            finish_line_cooldown = 60  # Prevent multiple counts
+            finish_line_cooldown = 60
             print(f"Lap {lap_count} completed!")
+            if lap_count >= LAPS_TO_COMPLETE:
+                # Calculate final time
+                if race_start_time:
+                    final_time = (pygame.time.get_ticks() - race_start_time) / 1000.0
+                game_state = WIN_SCREEN
         last_finish_check = crossed_finish
+
+    # Apply extra friction when off track
+    if not road.is_on_track(car_x, car_y):
+        car_velocity *= 0.97
 
     # Clear screen with solid color first
     screen.fill((34, 139, 34))  # Forest green background
     
     # Draw world and road in correct order
     screen.blit(world, (-camera_x, -camera_y))
-    road.draw(screen, camera_x, camera_y)
+    road.draw(screen, camera_x, camera_y, car_x, car_y)
     
     # Draw car last
     screen_car_x = car_x - camera_x
@@ -249,9 +338,36 @@ while running:
     lap_text = font.render(f"LAP: {lap_count}", True, (255, 255, 255))
     screen.blit(lap_text, (10, 90))
 
+    # Add to UI rendering
+    if road.is_debug_visible():
+        corner_text = font.render(f"Corner: {current_corner_type}", True, (255, 255, 255))
+        screen.blit(corner_text, (10, 130))
+
+    # Replace the road piece rotation controls section with:
+    nearest = road.get_nearest_piece(car_x, car_y)
+    if nearest and (keys[pygame.K_LEFT] or keys[pygame.K_RIGHT]):
+        pos, piece = nearest
+        rotation_amount = 90 if keys[pygame.K_RIGHT] else -90
+        road.rotate_piece_at_position(pos, rotation_amount)
+            
+    # Add to UI rendering
+    if race_start_time:  # Show ongoing race time
+        current_race_time = (pygame.time.get_ticks() - race_start_time) / 1000.0
+        time_text = font.render(f"Time: {current_race_time:.1f}s", True, (255, 255, 255))
+        screen.blit(time_text, (10, 210))
+
+    # Show "Nearby" text only if debug is active
+    if road.is_debug_visible():
+        nearest = road.get_nearest_piece(car_x, car_y)
+        if nearest:
+            pos, piece = nearest
+            piece_type = piece['type'].capitalize()
+            piece_text = font.render(f"Nearby: {piece_type}", True, (255, 255, 255))
+            screen.blit(piece_text, (10, 170))
+
     pygame.display.flip()
     clock.tick(60)
-    
+   
 
 pygame.quit()
 sys.exit()
