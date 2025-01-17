@@ -1,9 +1,11 @@
 import pygame
 import sys
 import math
+import os  
 from road import Road  
 from title_screen import TitleScreen
 from win_screen import WinScreen
+from track_loader import TrackLoader
 
 pygame.init()
 
@@ -76,12 +78,15 @@ corner_types = ["up_right", "right_down", "down_left", "left_up",
                 "right_up", "down_right", "left_down", "up_left"]
 
 MENU = 0
-PLAYING = 1
-WIN_SCREEN = 2  # Add new state
+LOADING = 1
+PLAYING = 2
+WIN_SCREEN = 3
+TRACK_LOADER = 4  # Add new state
 
 game_state = MENU
 title_screen = TitleScreen(screen, WIDTH, HEIGHT)
 win_screen = WinScreen(screen, WIDTH, HEIGHT)
+track_loader = TrackLoader(screen, WIDTH, HEIGHT)
 
 lap_count = 0
 LAPS_TO_COMPLETE = 3
@@ -116,26 +121,22 @@ def rot_center(image, angle, x, y):
     new_rect = rotated_image.get_rect(center = image.get_rect(center = (x, y)).center)
     return rotated_image, new_rect
 
+def draw_loading_screen():
+    screen.fill((0, 0, 0))
+    loading_text = font.render("Loading...", True, (255, 255, 255))
+    screen.blit(loading_text, (WIDTH // 2 - loading_text.get_width() // 2, HEIGHT // 2 - loading_text.get_height() // 2))
+    pygame.display.flip()
+
+def draw_error_message(message):
+    screen.fill((0, 0, 0))
+    error_text = font.render(message, True, (255, 0, 0))
+    screen.blit(error_text, (WIDTH // 2 - error_text.get_width() // 2, HEIGHT // 2 - error_text.get_height() // 2))
+    pygame.display.flip()
+
 running = True
 clock = pygame.time.Clock()
 
-try:
-    print("Starting road system...")
-    road = Road(WORLD_SIZE)
-    # Set initial car position to track start
-    car_x, car_y = road.start_position
-    car_rect.center = road.start_position
-    # Ensure the car faces the correct direction
-    if road.track_pieces.get((car_x, car_y)):
-        piece = road.track_pieces[(car_x, car_y)]
-        if piece['type'] == 'straight':
-            car_angle = piece['rotation']
-        elif piece['type'] == 'corner':
-            car_angle = piece['rotation'] + 90
-    print("Road system finished")
-except Exception as e:
-    print(f"Failed to create road: {e}")
-    sys.exit(1)
+road = None
 
 while running:
     if game_state == MENU:
@@ -143,12 +144,75 @@ while running:
             if event.type == pygame.QUIT:
                 running = False
             elif event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
-                game_state = PLAYING
+                game_state = TRACK_LOADER
 
         title_screen.draw()
         pygame.display.flip()
         clock.tick(60)
         continue
+    
+    elif game_state == TRACK_LOADER:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                running = False
+            else:
+                action, track_file = track_loader.handle_input(event)
+                if action == "load" and track_file:
+                    try:
+                        road = Road(WORLD_SIZE)
+                        track_path = os.path.join('./assests/tracks', track_file)
+                        print(f"Loading track from: {track_path}")
+                        success = road.load_saved_track(track_path)
+                        if not success:
+                            print("Failed to load track")
+                            draw_error_message("Failed to load track")
+                            pygame.time.wait(2000)  # Wait for 2 seconds to show the error message
+                            continue
+                        
+                        car_x, car_y = road.start_position
+                        car_rect.center = road.start_position
+                        if road.track_pieces.get((car_x, car_y)):
+                            piece = road.track_pieces[(car_x, car_y)]
+                            if piece['type'] == 'straight':
+                                car_angle = piece['rotation']
+                            elif piece['type'] == 'corner':
+                                car_angle = piece['rotation'] + 90
+                        game_state = PLAYING
+                    except Exception as e:
+                        print(f"Error loading track: {e}")
+                        draw_error_message(f"Error loading track: {e}")
+                        pygame.time.wait(2000)  # Wait for 2 seconds to show the error message
+                        continue
+                elif action == "new":
+                    game_state = LOADING
+
+        track_loader.draw()
+        pygame.display.flip()
+        clock.tick(60)
+        continue
+
+    elif game_state == LOADING:
+        draw_loading_screen()
+        pygame.display.flip()
+        try:
+            print("Starting road system...")
+            road = Road(WORLD_SIZE)
+            road.generate_road()
+            # Set initial car position to track start
+            car_x, car_y = road.start_position
+            car_rect.center = road.start_position
+            # Ensure the car faces the correct direction
+            if road.track_pieces.get((car_x, car_y)):
+                piece = road.track_pieces[(car_x, car_y)]
+                if piece['type'] == 'straight':
+                    car_angle = piece['rotation']
+                elif piece['type'] == 'corner':
+                    car_angle = piece['rotation'] + 90
+            print("Road system finished")
+            game_state = PLAYING
+        except Exception as e:
+            print(f"Failed to create road: {e}")
+            sys.exit(1)
     
     elif game_state == WIN_SCREEN:
         for event in pygame.event.get():
@@ -166,11 +230,7 @@ while running:
                 elif action == "new":
                     lap_count = 0
                     race_start_time = None
-                    road.generate_road()
-                    car_x, car_y = road.start_position
-                    car_rect.center = road.start_position
-                    car_velocity = 0
-                    game_state = PLAYING
+                    game_state = LOADING
         
         win_screen.draw(final_time)
         pygame.display.flip()
@@ -368,8 +428,21 @@ while running:
         nearest = road.get_nearest_piece(car_x, car_y)
         if nearest:
             pos, piece = nearest
-            piece_type = piece['type'].capitalize()
-            piece_text = font.render(f"Nearby: {piece_type}", True, (255, 255, 255))
+            piece_type = piece.get('type', 'unknown')
+            piece_rotation = piece.get('rotation', 0)
+            if piece_type == 'corner':
+                # Convert rotation to corner type
+                corner_map = {
+                    0: "up_right",
+                    90: "right_down",
+                    180: "down_left",
+                    270: "left_up",
+                    -90: "left_up",
+                    -180: "down_left",
+                    -270: "right_down"
+                }
+                piece_type = corner_map.get(piece_rotation, piece_type)
+            piece_text = font.render(f"Nearby: {piece_type} ({piece_rotation}°)", True, (255, 255, 255))
             screen.blit(piece_text, (10, 170))
 
     pygame.display.flip()

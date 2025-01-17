@@ -1,0 +1,572 @@
+{
+    "start_position": [
+        4416.0,
+        4416.0
+    ],
+    "finish_position": [
+        4800.0,
+        4416.0
+    ],
+    "track_pieces": [
+        {
+            "position": [
+                11.0,
+                11.0
+            ],
+            "type": "straight",
+            "rotation": 0
+        },
+        {
+            "position": [
+                11.0,
+                12.0
+            ],
+            "type": "straight",
+            "rotation": 0
+        },
+        {
+            "position": [
+                11.0,
+                13.0
+            ],
+            "type": "straight",
+            "rotation": 0
+        },
+        {
+            "position": [
+                11.0,
+                14.0
+            ],
+            "type": "corner",
+            "rotation": 90
+        },
+        {
+            "position": [
+                12.0,
+                14.0
+            ],
+            "type": "straight",
+            "rotation": 90
+        },
+        {
+            "position": [
+                13.0,
+                14.0
+            ],
+            "type": "straight",
+            "rotation": 90
+        },
+        {
+            "position": [
+                14.0,
+                14.0
+            ],
+            "type": "straight",
+            "rotation": 90
+        },
+        {
+            "position": [
+                15.0,
+                14.0
+            ],
+            "type": "straight",
+            "rotation": 90
+        },
+        {
+            "position": [
+                16.0,
+                14.0
+            ],
+            "type": "straight",
+            "rotation": 90
+        },
+        {
+            "position": [
+                17.0,
+                14.0
+            ],
+            "type": "straight",
+            "rotation": 90
+        },
+        {
+            "position": [
+                18.0,
+                14.0
+            ],
+            "type": "corner",
+            "rotation": 90
+        },
+        {
+            "position": [
+                18.0,
+                15.0
+            ],
+            "type": "straight",
+            "rotation": 0
+        },
+        {
+            "position": [
+                18.0,
+                16.0
+            ],
+            "type": "straight",
+            "rotation": 0
+        },
+        {
+            "position": [
+                18.0,
+                17.0
+            ],
+            "type": "corner",
+            "rotation": 90
+        },
+        {
+            "position": [
+                17.0,
+                17.0
+            ],
+            "type": "straight",
+            "rotation": 90
+        },
+        {
+            "position": [
+                16.0,
+                17.0
+            ],
+            "type": "straight",
+            "rotation": 90
+        },
+        {
+            "position": [
+                15.0,
+                17.0
+            ],
+            "type": "straight",
+            "rotation": 90
+        },
+        {
+            "position": [
+                14.0,
+                17.0
+            ],
+            "type": "straight",
+            "rotation": 90
+        },
+        {
+            "position": [
+                13.0,
+                17.0
+            ],
+            "type": "straight",
+            "rotation": 90
+        },
+        {
+            "position": [
+                12.0,
+                17.0
+            ],
+            "type": "straight",
+            "rotation": 90
+        },
+        {
+            "position": [
+                11.0,
+                17.0
+            ],
+            "type": "straight",
+            "rotation": 90
+        },
+        {
+            "position": [
+                10.0,
+                17.0
+            ],
+            "type": "straight",
+            "rotation": 90
+        },
+        {
+            "position": [
+                9.0,
+                17.0
+            ],
+            "type": "straight",
+            "rotation": 90
+        },
+        {
+            "position": [
+                8.0,
+                17.0
+            ],
+            "type": "straight",
+            "rotation": 90
+        },
+        {
+            "position": [
+                7.0,
+                17.0
+            ],
+            "type": "straight",
+            "rotation": 90
+        },
+        {
+            "position": [
+                6.0,
+                17.0
+            ],
+            "type": "straight",
+            "rotation": 90
+        },
+        {
+            "position": [
+                5.0,
+                17.0
+            ],
+            "type": "corner",
+            "rotation": 90
+        },
+        {
+            "position": [
+                5.0,
+                18.0
+            ],
+            "type": "straight",
+            "rotation": 0
+        },
+        {
+            "position": [
+                5.0,
+                19.0
+            ],
+            "type": "straight",
+            "rotation": 0
+        },
+        {
+            "position": [
+                5.0,
+                20.0
+            ],
+            "type": "straight",
+            "rotation": 0
+        },
+        {
+            "position": [
+                5.0,
+                21.0
+            ],
+            "type": "straight",
+            "rotation": 0
+        },
+        {
+            "position": [
+                5.0,
+                22.0
+            ],
+            "type": "straight",
+            "rotation": 0
+        },
+        {
+            "position": [
+                5.0,
+                23.0
+            ],
+            "type": "straight",
+            "rotation": 0
+        },
+        {
+            "position": [
+                5.0,
+                24.0
+            ],
+            "type": "corner",
+            "rotation": 90
+        },
+        {
+            "position": [
+                6.0,
+                24.0
+            ],
+            "type": "straight",
+            "rotation": 90
+        },
+        {
+            "position": [
+                7.0,
+                24.0
+            ],
+            "type": "straight",
+            "rotation": 90
+        },
+        {
+            "position": [
+                8.0,
+                24.0
+            ],
+            "type": "straight",
+            "rotation": 90
+        },
+        {
+            "position": [
+                9.0,
+                24.0
+            ],
+            "type": "straight",
+            "rotation": 90
+        },
+        {
+            "position": [
+                10.0,
+                24.0
+            ],
+            "type": "straight",
+            "rotation": 90
+        },
+        {
+            "position": [
+                11.0,
+                24.0
+            ],
+            "type": "straight",
+            "rotation": 90
+        },
+        {
+            "position": [
+                12.0,
+                24.0
+            ],
+            "type": "corner",
+            "rotation": 180
+        },
+        {
+            "position": [
+                12.0,
+                23.0
+            ],
+            "type": "straight",
+            "rotation": 0
+        },
+        {
+            "position": [
+                12.0,
+                22.0
+            ],
+            "type": "straight",
+            "rotation": 0
+        },
+        {
+            "position": [
+                12.0,
+                21.0
+            ],
+            "type": "straight",
+            "rotation": 0
+        },
+        {
+            "position": [
+                12.0,
+                20.0
+            ],
+            "type": "straight",
+            "rotation": 0
+        },
+        {
+            "position": [
+                12.0,
+                19.0
+            ],
+            "type": "straight",
+            "rotation": 0
+        },
+        {
+            "position": [
+                12.0,
+                18.0
+            ],
+            "type": "corner",
+            "rotation": 270
+        },
+        {
+            "position": [
+                13.0,
+                18.0
+            ],
+            "type": "straight",
+            "rotation": 90
+        },
+        {
+            "position": [
+                14.0,
+                18.0
+            ],
+            "type": "straight",
+            "rotation": 90
+        },
+        {
+            "position": [
+                15.0,
+                18.0
+            ],
+            "type": "straight",
+            "rotation": 90
+        },
+        {
+            "position": [
+                16.0,
+                18.0
+            ],
+            "type": "straight",
+            "rotation": 90
+        },
+        {
+            "position": [
+                17.0,
+                18.0
+            ],
+            "type": "straight",
+            "rotation": 90
+        },
+        {
+            "position": [
+                18.0,
+                18.0
+            ],
+            "type": "straight",
+            "rotation": 90
+        },
+        {
+            "position": [
+                19.0,
+                18.0
+            ],
+            "type": "straight",
+            "rotation": 90
+        },
+        {
+            "position": [
+                20.0,
+                18.0
+            ],
+            "type": "corner",
+            "rotation": 180
+        },
+        {
+            "position": [
+                20.0,
+                17.0
+            ],
+            "type": "straight",
+            "rotation": 0
+        },
+        {
+            "position": [
+                20.0,
+                16.0
+            ],
+            "type": "straight",
+            "rotation": 0
+        },
+        {
+            "position": [
+                20.0,
+                15.0
+            ],
+            "type": "straight",
+            "rotation": 0
+        },
+        {
+            "position": [
+                20.0,
+                14.0
+            ],
+            "type": "straight",
+            "rotation": 0
+        },
+        {
+            "position": [
+                20.0,
+                13.0
+            ],
+            "type": "straight",
+            "rotation": 0
+        },
+        {
+            "position": [
+                20.0,
+                12.0
+            ],
+            "type": "straight",
+            "rotation": 0
+        },
+        {
+            "position": [
+                20.0,
+                11.0
+            ],
+            "type": "corner",
+            "rotation": 250
+        },
+        {
+            "position": [
+                19.0,
+                11.0
+            ],
+            "type": "straight",
+            "rotation": 90
+        },
+        {
+            "position": [
+                18.0,
+                11.0
+            ],
+            "type": "straight",
+            "rotation": 90
+        },
+        {
+            "position": [
+                17.0,
+                11.0
+            ],
+            "type": "straight",
+            "rotation": 90
+        },
+        {
+            "position": [
+                16.0,
+                11.0
+            ],
+            "type": "straight",
+            "rotation": 90
+        },
+        {
+            "position": [
+                15.0,
+                11.0
+            ],
+            "type": "straight",
+            "rotation": 90
+        },
+        {
+            "position": [
+                14.0,
+                11.0
+            ],
+            "type": "straight",
+            "rotation": 90
+        },
+        {
+            "position": [
+                13.0,
+                11.0
+            ],
+            "type": "straight",
+            "rotation": 90
+        },
+        {
+            "position": [
+                12.0,
+                11.0
+            ],
+            "type": "straight",
+            "rotation": 90
+        }
+    ]
+}

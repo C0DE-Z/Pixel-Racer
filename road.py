@@ -157,7 +157,7 @@ class Road:
                     continue
 
                 if not self.is_valid_track(track_points, start_x, start_y):
-                    print(f"Invalid track generated, attempt {attempts + 1}")
+                    #print(f"Invalid track generated, attempt {attempts + 1}")
                     attempts += 1
                     continue
 
@@ -167,7 +167,7 @@ class Road:
                 return True
 
             except ValueError as e:
-                print(f"Track generation failed: {e}")
+                #print(f"Track generation failed: {e}")
                 attempts += 1
                 continue
 
@@ -269,6 +269,7 @@ class Road:
                 self.road_surface.blit(rotated_straight, (pixel_x, pixel_y))
                 self.track_pieces[(pixel_x, pixel_y)] = {
                     'type': 'straight',
+                    'direction': 'straight',  # Add default direction for straight pieces
                     'rotation': rotation
                 }
             
@@ -281,21 +282,22 @@ class Road:
                 pos, piece = nearest
                 pygame.draw.rect(self.road_surface, (255, 255, 0, 128),
                                  (pos[0], pos[1], self.tile_size, self.tile_size), 2)
-                # Display piece type and rotation
-                piece_info = f"{piece['direction']} ({piece['rotation']}°)"
+                # display piece type and rotation
+                piece_info = f"{piece.get('direction', 'unknown')} ({piece['rotation']}°)"
                 font = pygame.font.Font(None, 24)
                 piece_text = font.render(piece_info, True, (255, 255, 255))
                 screen.blit(piece_text, (pos[0] - camera_x, pos[1] - camera_y - 20))
 
         screen.blit(self.road_surface, (-camera_x, -camera_y))
 
+    # Check if the car has crossed the finish line
     def check_finish_line(self, car_x, car_y):
         if self.finish_position:
             finish_x, finish_y = self.finish_position
             distance = math.sqrt((car_x - finish_x)**2 + (car_y - finish_y)**2)
             return distance < self.tile_size // 2
         return False
-
+    # Get the closest track piece to the car used for dev tools 
     def get_nearest_piece(self, car_x, car_y):
         nearest = None
         min_dist = float('inf')
@@ -344,7 +346,7 @@ class Road:
         return distance <= (self.tile_size * 0.6)
 
     def store_valid_track(self, track_points):
-        """Store valid tracks for future loading."""
+       # Store valid tracks for future loading.
         import time
         import os
         os.makedirs('./assests/tracks', exist_ok=True)
@@ -367,10 +369,10 @@ class Road:
             json.dump(track_data, f, indent=4)
         print(f"Saved track to {filename}")
 
-    def load_saved_track(self, index=0):
-        """Load a saved track by index and place pieces."""
+    def load_saved_track(self, filename):
+        #Load a saved track by filename and place pieces.
         try:
-            with open(f'./assests/tracks/track_{index}.json', 'r') as f:
+            with open(f'./assests/tracks/{filename}', 'r') as f:
                 track_data = json.load(f)
             
             self.start_position = tuple(track_data["start_position"])
@@ -395,7 +397,11 @@ class Road:
                 self.road_surface.blit(rotated_piece, (pixel_x, pixel_y))
                 self.track_pieces[(pixel_x, pixel_y)] = {
                     'type': piece_type,
+                    'direction': piece.get('direction', 'unknown'),  # Ensure direction is set
                     'rotation': rotation
                 }
+            return True
         except (FileNotFoundError, IndexError, json.JSONDecodeError):
             print("No saved track found or invalid index")
+            return False
+
