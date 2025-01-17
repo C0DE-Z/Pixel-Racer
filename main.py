@@ -423,7 +423,7 @@ while running:
         time_text = font.render(f"Time: {current_race_time:.1f}s", True, (255, 255, 255))
         screen.blit(time_text, (10, 210))
 
-    # Show "Nearby" text only if debug is active
+    # Show text only if debug is active
     if road.is_debug_visible():
         nearest = road.get_nearest_piece(car_x, car_y)
         if nearest:
@@ -432,7 +432,7 @@ while running:
             piece_rotation = piece.get('rotation', 0)
             if piece_type == 'corner':
                 # Convert rotation to corner type
-                corner_map = {
+                corner_map = { 
                     0: "up_right",
                     90: "right_down",
                     180: "down_left",

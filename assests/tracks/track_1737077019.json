@@ -1,11 +1,11 @@
 {
     "start_position": [
-        4416.0,
-        4416.0
+        11.5,
+        11.5
     ],
     "finish_position": [
-        4800.0,
-        4416.0
+        11.5,
+        10.5
     ],
     "track_pieces": [
         {
@@ -14,11 +14,35 @@
                 11.0
             ],
             "type": "straight",
-            "rotation": 0
+            "rotation": 90
         },
         {
             "position": [
-                11.0,
+                12.0,
+                11.0
+            ],
+            "type": "straight",
+            "rotation": 90
+        },
+        {
+            "position": [
+                13.0,
+                11.0
+            ],
+            "type": "straight",
+            "rotation": 90
+        },
+        {
+            "position": [
+                14.0,
+                11.0
+            ],
+            "type": "corner",
+            "rotation": 90
+        },
+        {
+            "position": [
+                14.0,
                 12.0
             ],
             "type": "straight",
@@ -26,7 +50,7 @@
         },
         {
             "position": [
-                11.0,
+                14.0,
                 13.0
             ],
             "type": "straight",
@@ -34,71 +58,15 @@
         },
         {
             "position": [
-                11.0,
-                14.0
-            ],
-            "type": "corner",
-            "rotation": 90
-        },
-        {
-            "position": [
-                12.0,
-                14.0
-            ],
-            "type": "straight",
-            "rotation": 90
-        },
-        {
-            "position": [
-                13.0,
-                14.0
-            ],
-            "type": "straight",
-            "rotation": 90
-        },
-        {
-            "position": [
                 14.0,
                 14.0
             ],
             "type": "straight",
-            "rotation": 90
+            "rotation": 0
         },
         {
             "position": [
-                15.0,
-                14.0
-            ],
-            "type": "straight",
-            "rotation": 90
-        },
-        {
-            "position": [
-                16.0,
-                14.0
-            ],
-            "type": "straight",
-            "rotation": 90
-        },
-        {
-            "position": [
-                17.0,
-                14.0
-            ],
-            "type": "straight",
-            "rotation": 90
-        },
-        {
-            "position": [
-                18.0,
-                14.0
-            ],
-            "type": "corner",
-            "rotation": 90
-        },
-        {
-            "position": [
-                18.0,
+                14.0,
                 15.0
             ],
             "type": "straight",
@@ -106,56 +74,16 @@
         },
         {
             "position": [
-                18.0,
+                14.0,
                 16.0
             ],
-            "type": "straight",
-            "rotation": 0
-        },
-        {
-            "position": [
-                18.0,
-                17.0
-            ],
             "type": "corner",
-            "rotation": 90
-        },
-        {
-            "position": [
-                17.0,
-                17.0
-            ],
-            "type": "straight",
-            "rotation": 90
-        },
-        {
-            "position": [
-                16.0,
-                17.0
-            ],
-            "type": "straight",
-            "rotation": 90
-        },
-        {
-            "position": [
-                15.0,
-                17.0
-            ],
-            "type": "straight",
-            "rotation": 90
-        },
-        {
-            "position": [
-                14.0,
-                17.0
-            ],
-            "type": "straight",
             "rotation": 90
         },
         {
             "position": [
                 13.0,
-                17.0
+                16.0
             ],
             "type": "straight",
             "rotation": 90
@@ -163,7 +91,7 @@
         {
             "position": [
                 12.0,
-                17.0
+                16.0
             ],
             "type": "straight",
             "rotation": 90
@@ -171,7 +99,7 @@
         {
             "position": [
                 11.0,
-                17.0
+                16.0
             ],
             "type": "straight",
             "rotation": 90
@@ -179,7 +107,7 @@
         {
             "position": [
                 10.0,
-                17.0
+                16.0
             ],
             "type": "straight",
             "rotation": 90
@@ -187,386 +115,314 @@
         {
             "position": [
                 9.0,
-                17.0
-            ],
-            "type": "straight",
-            "rotation": 90
-        },
-        {
-            "position": [
-                8.0,
-                17.0
-            ],
-            "type": "straight",
-            "rotation": 90
-        },
-        {
-            "position": [
-                7.0,
-                17.0
-            ],
-            "type": "straight",
-            "rotation": 90
-        },
-        {
-            "position": [
-                6.0,
-                17.0
-            ],
-            "type": "straight",
-            "rotation": 90
-        },
-        {
-            "position": [
-                5.0,
-                17.0
+                16.0
             ],
             "type": "corner",
-            "rotation": 90
-        },
-        {
-            "position": [
-                5.0,
-                18.0
-            ],
-            "type": "straight",
             "rotation": 0
-        },
-        {
-            "position": [
-                5.0,
-                19.0
-            ],
-            "type": "straight",
-            "rotation": 0
-        },
-        {
-            "position": [
-                5.0,
-                20.0
-            ],
-            "type": "straight",
-            "rotation": 0
-        },
-        {
-            "position": [
-                5.0,
-                21.0
-            ],
-            "type": "straight",
-            "rotation": 0
-        },
-        {
-            "position": [
-                5.0,
-                22.0
-            ],
-            "type": "straight",
-            "rotation": 0
-        },
-        {
-            "position": [
-                5.0,
-                23.0
-            ],
-            "type": "straight",
-            "rotation": 0
-        },
-        {
-            "position": [
-                5.0,
-                24.0
-            ],
-            "type": "corner",
-            "rotation": 90
-        },
-        {
-            "position": [
-                6.0,
-                24.0
-            ],
-            "type": "straight",
-            "rotation": 90
-        },
-        {
-            "position": [
-                7.0,
-                24.0
-            ],
-            "type": "straight",
-            "rotation": 90
-        },
-        {
-            "position": [
-                8.0,
-                24.0
-            ],
-            "type": "straight",
-            "rotation": 90
         },
         {
             "position": [
                 9.0,
-                24.0
+                15.0
             ],
             "type": "straight",
-            "rotation": 90
+            "rotation": 0
         },
         {
             "position": [
-                10.0,
-                24.0
+                9.0,
+                14.0
             ],
             "type": "straight",
-            "rotation": 90
+            "rotation": 0
         },
         {
             "position": [
-                11.0,
-                24.0
+                9.0,
+                13.0
             ],
             "type": "straight",
-            "rotation": 90
+            "rotation": 0
         },
         {
             "position": [
-                12.0,
-                24.0
+                9.0,
+                12.0
+            ],
+            "type": "straight",
+            "rotation": 0
+        },
+        {
+            "position": [
+                9.0,
+                11.0
+            ],
+            "type": "straight",
+            "rotation": 0
+        },
+        {
+            "position": [
+                9.0,
+                10.0
+            ],
+            "type": "straight",
+            "rotation": 0
+        },
+        {
+            "position": [
+                9.0,
+                9.0
+            ],
+            "type": "straight",
+            "rotation": 0
+        },
+        {
+            "position": [
+                9.0,
+                8.0
             ],
             "type": "corner",
-            "rotation": 180
+            "rotation": 90
         },
         {
             "position": [
-                12.0,
-                23.0
+                8.0,
+                8.0
+            ],
+            "type": "straight",
+            "rotation": 90
+        },
+        {
+            "position": [
+                7.0,
+                8.0
+            ],
+            "type": "straight",
+            "rotation": 90
+        },
+        {
+            "position": [
+                6.0,
+                8.0
+            ],
+            "type": "straight",
+            "rotation": 90
+        },
+        {
+            "position": [
+                5.0,
+                8.0
+            ],
+            "type": "straight",
+            "rotation": 90
+        },
+        {
+            "position": [
+                4.0,
+                8.0
+            ],
+            "type": "corner",
+            "rotation": 0
+        },
+        {
+            "position": [
+                4.0,
+                7.0
             ],
             "type": "straight",
             "rotation": 0
         },
         {
             "position": [
-                12.0,
-                22.0
+                4.0,
+                6.0
             ],
             "type": "straight",
             "rotation": 0
         },
         {
             "position": [
-                12.0,
-                21.0
+                4.0,
+                5.0
             ],
             "type": "straight",
             "rotation": 0
         },
         {
             "position": [
-                12.0,
-                20.0
-            ],
-            "type": "straight",
-            "rotation": 0
-        },
-        {
-            "position": [
-                12.0,
-                19.0
-            ],
-            "type": "straight",
-            "rotation": 0
-        },
-        {
-            "position": [
-                12.0,
-                18.0
+                4.0,
+                4.0
             ],
             "type": "corner",
             "rotation": 270
         },
         {
             "position": [
-                13.0,
-                18.0
+                5.0,
+                4.0
             ],
             "type": "straight",
             "rotation": 90
         },
         {
             "position": [
-                14.0,
-                18.0
+                6.0,
+                4.0
             ],
             "type": "straight",
             "rotation": 90
         },
         {
             "position": [
-                15.0,
-                18.0
+                7.0,
+                4.0
             ],
             "type": "straight",
             "rotation": 90
         },
         {
             "position": [
-                16.0,
-                18.0
-            ],
-            "type": "straight",
-            "rotation": 90
-        },
-        {
-            "position": [
-                17.0,
-                18.0
-            ],
-            "type": "straight",
-            "rotation": 90
-        },
-        {
-            "position": [
-                18.0,
-                18.0
-            ],
-            "type": "straight",
-            "rotation": 90
-        },
-        {
-            "position": [
-                19.0,
-                18.0
-            ],
-            "type": "straight",
-            "rotation": 90
-        },
-        {
-            "position": [
-                20.0,
-                18.0
+                8.0,
+                4.0
             ],
             "type": "corner",
             "rotation": 180
         },
         {
             "position": [
-                20.0,
-                17.0
+                8.0,
+                3.0
             ],
             "type": "straight",
             "rotation": 0
         },
         {
             "position": [
-                20.0,
-                16.0
+                8.0,
+                2.0
             ],
             "type": "straight",
             "rotation": 0
         },
         {
             "position": [
-                20.0,
-                15.0
+                8.0,
+                1.0
             ],
             "type": "straight",
             "rotation": 0
         },
         {
             "position": [
-                20.0,
-                14.0
-            ],
-            "type": "straight",
-            "rotation": 0
-        },
-        {
-            "position": [
-                20.0,
-                13.0
-            ],
-            "type": "straight",
-            "rotation": 0
-        },
-        {
-            "position": [
-                20.0,
-                12.0
-            ],
-            "type": "straight",
-            "rotation": 0
-        },
-        {
-            "position": [
-                20.0,
-                11.0
+                8.0,
+                0.0
             ],
             "type": "corner",
-            "rotation": 250
+            "rotation": 270
         },
         {
             "position": [
-                19.0,
-                11.0
+                9.0,
+                0.0
             ],
             "type": "straight",
             "rotation": 90
         },
         {
             "position": [
-                18.0,
-                11.0
+                10.0,
+                0.0
             ],
             "type": "straight",
             "rotation": 90
         },
         {
             "position": [
-                17.0,
-                11.0
+                11.0,
+                0.0
             ],
-            "type": "straight",
+            "type": "corner",
             "rotation": 90
         },
         {
             "position": [
-                16.0,
-                11.0
+                11.0,
+                1.0
             ],
             "type": "straight",
-            "rotation": 90
+            "rotation": 0
         },
         {
             "position": [
-                15.0,
-                11.0
+                11.0,
+                2.0
             ],
             "type": "straight",
-            "rotation": 90
+            "rotation": 0
         },
         {
             "position": [
-                14.0,
-                11.0
+                11.0,
+                3.0
             ],
             "type": "straight",
-            "rotation": 90
+            "rotation": 0
         },
         {
             "position": [
-                13.0,
-                11.0
+                11.0,
+                4.0
             ],
             "type": "straight",
-            "rotation": 90
+            "rotation": 0
         },
         {
             "position": [
-                12.0,
-                11.0
+                11.0,
+                5.0
             ],
             "type": "straight",
-            "rotation": 90
+            "rotation": 0
+        },
+        {
+            "position": [
+                11.0,
+                6.0
+            ],
+            "type": "straight",
+            "rotation": 0
+        },
+        {
+            "position": [
+                11.0,
+                7.0
+            ],
+            "type": "straight",
+            "rotation": 0
+        },
+        {
+            "position": [
+                11.0,
+                8.0
+            ],
+            "type": "straight",
+            "rotation": 0
+        },
+        {
+            "position": [
+                11.0,
+                9.0
+            ],
+            "type": "straight",
+            "rotation": 0
+        },
+        {
+            "position": [
+                11.0,
+                10.0
+            ],
+            "type": "straight",
+            "rotation": 0
         }
     ]
 }

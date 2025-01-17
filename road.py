@@ -225,6 +225,11 @@ class Road:
                 rotation = 90 if current_direction in [0, 2] else 0
                 rotated_finish = pygame.transform.rotate(self.finish, rotation)
                 self.road_surface.blit(rotated_finish, (pixel_x, pixel_y))
+                self.track_pieces[(pixel_x, pixel_y)] = {
+                    'type': 'finish',
+                    'direction': 'finish',
+                    'rotation': rotation
+                }
             
             if next_x > x:
                 current_direction = 1
@@ -346,37 +351,36 @@ class Road:
         return distance <= (self.tile_size * 0.6)
 
     def store_valid_track(self, track_points):
-       # Store valid tracks for future loading.
         import time
         import os
         os.makedirs('./assests/tracks', exist_ok=True)
         
         track_data = {
-            "start_position": self.start_position,
-            "finish_position": self.finish_position,
+            "start_position": [self.start_position[0] / self.tile_size, self.start_position[1] / self.tile_size],
+            "finish_position": [self.finish_position[0] / self.tile_size, self.finish_position[1] / self.tile_size],
             "track_pieces": [
                 {
-                    "position": (x, y),
+                    "position": [x, y],
                     "type": self.track_pieces[(x * self.tile_size, y * self.tile_size)]['type'],
+                    "direction": self.track_pieces[(x * self.tile_size, y * self.tile_size)].get('direction', 'unknown'),
                     "rotation": self.track_pieces[(x * self.tile_size, y * self.tile_size)]['rotation']
                 }
                 for x, y in track_points
             ]
         }
         
-        filename = f"./assests/tracks/track_{int(time.time())}.json"
+        filename = "./assests/tracks/track_latest.json"
         with open(filename, 'w') as f:
             json.dump(track_data, f, indent=4)
         print(f"Saved track to {filename}")
 
-    def load_saved_track(self, filename):
-        #Load a saved track by filename and place pieces.
+    def load_saved_track(self, filename="./assests/tracks/track_latest.json"):
         try:
-            with open(f'./assests/tracks/{filename}', 'r') as f:
+            with open(filename, 'r') as f:
                 track_data = json.load(f)
             
-            self.start_position = tuple(track_data["start_position"])
-            self.finish_position = tuple(track_data["finish_position"])
+            self.start_position = (track_data["start_position"][0] * self.tile_size, track_data["start_position"][1] * self.tile_size)
+            self.finish_position = (track_data["finish_position"][0] * self.tile_size, track_data["finish_position"][1] * self.tile_size)
             self.road_surface.fill((0, 0, 0, 0))
             self.track_pieces = {}
             
@@ -391,17 +395,19 @@ class Road:
                     rotated_piece = pygame.transform.rotate(self.straight, rotation)
                 elif piece_type == "corner":
                     rotated_piece = pygame.transform.rotate(self.corner, rotation)
+                elif piece_type == "finish":
+                    rotated_piece = pygame.transform.rotate(self.finish, rotation)
                 else:
-                    continue  # Skip unknown types
+                    continue
                 
                 self.road_surface.blit(rotated_piece, (pixel_x, pixel_y))
                 self.track_pieces[(pixel_x, pixel_y)] = {
                     'type': piece_type,
-                    'direction': piece.get('direction', 'unknown'),  # Ensure direction is set
+                    'direction': piece.get('direction', 'unknown'),
                     'rotation': rotation
                 }
             return True
-        except (FileNotFoundError, IndexError, json.JSONDecodeError):
-            print("No saved track found or invalid index")
+        except (FileNotFoundError, IndexError, json.JSONDecodeError) as e:
+            print(f"No saved track found or invalid index: {e}")
             return False
 
