@@ -249,11 +249,7 @@ class Road:
                     (1, 0): "right_up",
                     (2, 1): "down_right",
                     (3, 2): "left_down",
-                    (0, 3): "up_left",
-                    (2, 0): "down_up",
-                    (0, 2): "up_down",
-                    (1, 3): "right_left",
-                    (3, 1): "left_right"
+                    (0, 3): "up_left"
                 }
 
                 corner_type = direction_map.get((last_direction, current_direction), "up_right")
@@ -265,8 +261,9 @@ class Road:
                 self.road_surface.blit(rotated_corner, (pixel_x, pixel_y))
                 self.track_pieces[(pixel_x, pixel_y)] = {
                     'type': 'corner',
-                    'direction': direction_map.get((last_direction, current_direction), "up_right"),
-                    'rotation': rotation
+                    'direction': corner_type,
+                    'rotation': rotation,
+                    'flipped': use_flip
                 }
             else:
                 rotation = 90 if current_direction in [1, 3] else 0
@@ -274,8 +271,9 @@ class Road:
                 self.road_surface.blit(rotated_straight, (pixel_x, pixel_y))
                 self.track_pieces[(pixel_x, pixel_y)] = {
                     'type': 'straight',
-                    'direction': 'straight',  # Add default direction for straight pieces
-                    'rotation': rotation
+                    'direction': 'straight',
+                    'rotation': rotation,
+                    'flipped': False
                 }
             
             last_direction = current_direction
@@ -288,7 +286,7 @@ class Road:
                 pygame.draw.rect(self.road_surface, (255, 255, 0, 128),
                                  (pos[0], pos[1], self.tile_size, self.tile_size), 2)
                 # display piece type and rotation
-                piece_info = f"{piece.get('direction', 'unknown')} ({piece['rotation']}°)"
+                piece_info = f"{piece['direction']} ({piece['rotation']}°)"
                 font = pygame.font.Font(None, 24)
                 piece_text = font.render(piece_info, True, (255, 255, 255))
                 screen.blit(piece_text, (pos[0] - camera_x, pos[1] - camera_y - 20))
@@ -390,11 +388,13 @@ class Road:
                 pixel_y = y * self.tile_size
                 piece_type = piece["type"]
                 rotation = piece["rotation"]
+                flipped = piece.get("flipped", False)
                 
                 if piece_type == "straight":
                     rotated_piece = pygame.transform.rotate(self.straight, rotation)
                 elif piece_type == "corner":
-                    rotated_piece = pygame.transform.rotate(self.corner, rotation)
+                    corner_img = self.corner_flip_x if flipped else self.corner
+                    rotated_piece = pygame.transform.rotate(corner_img, rotation)
                 elif piece_type == "finish":
                     rotated_piece = pygame.transform.rotate(self.finish, rotation)
                 else:
@@ -403,8 +403,9 @@ class Road:
                 self.road_surface.blit(rotated_piece, (pixel_x, pixel_y))
                 self.track_pieces[(pixel_x, pixel_y)] = {
                     'type': piece_type,
-                    'direction': piece.get('direction', 'unknown'),
-                    'rotation': rotation
+                    'direction': piece.get('direction', piece_type),
+                    'rotation': rotation,
+                    'flipped': flipped
                 }
             return True
         except (FileNotFoundError, IndexError, json.JSONDecodeError) as e:
