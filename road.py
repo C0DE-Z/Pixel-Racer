@@ -40,7 +40,8 @@ class Road:
 
         print("Generating road layout...")
         self.load_config()
-        self.generate_road()
+        if not self.load_saved_track():
+            self.generate_road()
         print("Road generation complete")
     
     def load_config(self):
@@ -48,23 +49,8 @@ class Road:
             with open('./assests/road_config.json', 'r') as f:
                 self.config = json.load(f)
         except FileNotFoundError:
-            print("Config not found, using defaults")
-            self.config = {
-                "corner_rotations": {
-                    "up_right": 0, "right_down": 90,
-                    "down_left": 180, "left_up": 270,
-                    "right_up": 0, "down_right": 90,
-                    "left_down": 180, "up_left": 270
-                },
-                "corner_flips": {
-                    "up_right": False, "right_down": False,
-                    "down_left": False, "left_up": False,
-                    "right_up": True, "down_right": True,
-                    "left_down": True, "up_left": True
-                }
-            }
-            self.save_config()
-
+            print("Config not found, Please download the config file from the repository")
+ 
     def save_config(self):
         with open('./assests/road_config.json', 'w') as f:
             json.dump(self.config, f, indent=4)
@@ -360,19 +346,20 @@ class Road:
                 {
                     "position": [x, y],
                     "type": self.track_pieces[(x * self.tile_size, y * self.tile_size)]['type'],
-                    "direction": self.track_pieces[(x * self.tile_size, y * self.tile_size)].get('direction', 'unknown'),
-                    "rotation": self.track_pieces[(x * self.tile_size, y * self.tile_size)]['rotation']
+                    "direction": self.track_pieces[(x * self.tile_size, y * self.tile_size)]['direction'],
+                    "rotation": self.track_pieces[(x * self.tile_size, y * self.tile_size)]['rotation'],
+                    "flipped": self.track_pieces[(x * self.tile_size, y * self.tile_size)]['flipped']
                 }
                 for x, y in track_points
             ]
         }
         
-        filename = "./assests/tracks/track_latest.json"
+        filename = f"./assests/tracks/track_{int(time.time())}.json"
         with open(filename, 'w') as f:
             json.dump(track_data, f, indent=4)
         print(f"Saved track to {filename}")
 
-    def load_saved_track(self, filename="./assests/tracks/track_latest.json"):
+    def load_saved_track(self, filename):
         try:
             with open(filename, 'r') as f:
                 track_data = json.load(f)
@@ -409,6 +396,6 @@ class Road:
                 }
             return True
         except (FileNotFoundError, IndexError, json.JSONDecodeError) as e:
-            print(f"No saved track found or invalid index: {e}")
+            print(f"Error loading track: {e}")
             return False
 
