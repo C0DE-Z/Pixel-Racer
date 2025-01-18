@@ -47,15 +47,13 @@ class Road:
             print(f"Error loading track music: {e}")
             self.track_music = None
 
-        print("Generating road layout...")
+        print("Initializing road system...")
         self.load_config()
         if test_mode:
             from road_test_map import generate_test_track
             test_track = generate_test_track()
             self.load_saved_track(test_track)
-        elif not self.load_saved_track():
-            self.generate_road()
-        print("Road generation complete")
+        print("Road initialization complete")
     
     def load_config(self):
         try:

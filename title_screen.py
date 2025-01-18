@@ -45,18 +45,15 @@ class TitleScreen:
     def draw(self):
         self.screen.fill(self.bg_color)
         
-        # Draw title
+        # Draw banner
+        banner_scaled = pygame.transform.scale(self.banner, (400, 200))  # Adjust size as needed
+        banner_rect = banner_scaled.get_rect(center=(self.width//2, self.height//4))
+        self.screen.blit(banner_scaled, banner_rect)
         
-        
-
-        pygame.transform.scale(self.banner, (16, 16)) 
-        bannar_rect = self.banner.get_rect(center=(self.width//2, self.height//4))
-        self.screen.blit(self.banner, bannar_rect)
-        # Draw start prompt
-        
-        pygame.transform.scale(self.play, (128, 128))
-        self.play_rect = self.play.get_rect(center=(self.width//2, self.height//2))
-        self.screen.blit(self.play, self.play_rect)
+        # Draw play button with proper scaling
+        play_scaled = pygame.transform.scale(self.play, (128, 128))  # Fixed size
+        self.play_rect = play_scaled.get_rect(center=(self.width//2, self.height//2))
+        self.screen.blit(play_scaled, self.play_rect)
         
         # Draw controls
         for i, control in enumerate(self.controls):
@@ -76,8 +73,9 @@ class TitleScreen:
 
     def handle_input(self, event):
         if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:  # Left click
-            # Check if click is within play button rect
-            if self.play_rect and self.play_rect.collidepoint(event.pos):
+            mouse_pos = pygame.mouse.get_pos()
+            if self.play_rect and self.play_rect.collidepoint(mouse_pos):
+                print("Play button clicked!")  # Debug print
                 if self.TitleScreenMusic is not None:
                     self.TitleScreenMusic.fadeout(250)
                     pygame.time.wait(1000)

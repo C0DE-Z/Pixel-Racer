@@ -2,6 +2,13 @@
 
 A top-down racing game built with Python and Pygame featuring procedurally generated tracks, realistic car physics, and manual transmission mechanics.
 
+Warning this game isn't suppose to look the best more of just show casing track generation for practice!
+
+Music By xlh__nick - Main Game
+And or (Ghostoru) - Title Screen
+
+Sfx by me.
+
 ## Features
 
 - Procedurally generated race tracks
@@ -48,3 +55,5 @@ The car features a 5-speed transmission with realistic gear ratios:
 2. Install Pygame:
    ```bash
    pip install pygame
+
+#### Feel free to add, Fork, mark issuse i'd love to see some feedback this is my first pygame creation or even python game with pixel art
