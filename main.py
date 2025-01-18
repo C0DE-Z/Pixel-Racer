@@ -1,3 +1,10 @@
+# Nicholas Melo 
+# Pixel Racer - A 2D racing game with pixel art style
+# 2025-01-17
+# Comp sci Period 2
+
+# Run main.py to run the game
+
 import pygame
 import sys
 import math
@@ -9,30 +16,27 @@ from track_loader import TrackLoader
 
 pygame.init()
 
-WIDTH, HEIGHT = 1000, 900
-screen = pygame.display.set_mode((WIDTH, HEIGHT))
+WIDTH, HEIGHT = 1280, 720
+screen = pygame.display.set_mode((WIDTH, HEIGHT),pygame.RESIZABLE)
 pygame.display.set_caption("Pixel Racer")
 
 grass_texture = pygame.image.load('./assests/grass.png') 
-grass_texture = pygame.transform.scale(grass_texture, (64, 64))  # Adjust size as needed
+grass_texture = pygame.transform.scale(grass_texture, (64, 64)) 
 
 WORLD_SIZE = 10000
 world = pygame.Surface((WORLD_SIZE, WORLD_SIZE))
-
-# Fill world with tiled grass texture
+# Fill world with grass texture
 for x in range(0, WORLD_SIZE, grass_texture.get_width()):
     for y in range(0, WORLD_SIZE, grass_texture.get_height()):
         world.blit(grass_texture, (x, y))
 
-# Camera offset
+# Var's 
 camera_x = 0
 camera_y = 0
-
 car_image = pygame.image.load('./assests/car1.png')
 car_image = pygame.transform.scale(car_image, (car_image.get_width() * 2, car_image.get_height() * 2))
 original_car = car_image
 car_rect = car_image.get_rect(center=(WIDTH // 2, HEIGHT // 2))
-
 car_angle = 0
 car_velocity = 0
 car_acceleration = 0.1
@@ -41,9 +45,8 @@ car_friction = 0.98
 car_rotation_speed = 3.5
 car_drift_factor = 0.95
 car_grip = 0.92  
-
-car_base_rotation_speed = 4.0  # Base rotation speed at low velocities
-car_min_rotation_speed = 0.3   # Minimum rotation speed at max velocity
+car_base_rotation_speed = 4.0  
+car_min_rotation_speed = 0.3   
 
 car_x = float(car_rect.centerx)
 car_y = float(car_rect.centery)

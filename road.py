@@ -38,6 +38,14 @@ class Road:
             print(f"Error loading road assets: {e}")
             raise
 
+        # Add music initialization
+        try:
+            self.track_music = pygame.mixer.Sound('./assests/music/voxels.mp3')
+            self.track_music.set_volume(0.2)
+        except (pygame.error, FileNotFoundError) as e:
+            print(f"Error loading track music: {e}")
+            self.track_music = None
+
         print("Generating road layout...")
         self.load_config()
         if not self.load_saved_track():
@@ -49,7 +57,22 @@ class Road:
             with open('./assests/road_config.json', 'r') as f:
                 self.config = json.load(f)
         except FileNotFoundError:
-            print("Config not found, Please download the config file from the repository")
+            print("Config not found, using defaults")
+            self.config = {
+                "corner_rotations": {
+                    "up_right": 0, "right_down": 90,
+                    "down_left": 180, "left_up": 270,
+                    "right_up": 0, "down_right": 90,
+                    "left_down": 180, "up_left": 270
+                },
+                "corner_flips": {
+                    "up_right": False, "right_down": False,
+                    "down_left": False, "left_up": False,
+                    "right_up": True, "down_right": True,
+                    "left_down": True, "up_left": True
+                }
+            }
+            self.save_config()
  
     def save_config(self):
         with open('./assests/road_config.json', 'w') as f:
@@ -148,8 +171,14 @@ class Road:
                     continue
 
                 self.place_track_pieces(track_points)
+                # Only save track when generating new one, not when loading
                 self.store_valid_track(track_points)
                 print(f"Valid track generated after {attempts + 1} attempts")
+                
+                # Stop any existing music before playing new track music
+                pygame.mixer.stop()
+                if self.track_music is not None:
+                    self.track_music.play(-1)  # Loop indefinitely
                 return True
 
             except ValueError as e:
@@ -359,23 +388,29 @@ class Road:
             json.dump(track_data, f, indent=4)
         print(f"Saved track to {filename}")
 
-    def load_saved_track(self, filename):
+    def load_saved_track(self, filename=None):
+        if filename is None:
+            return False
         try:
             with open(filename, 'r') as f:
                 track_data = json.load(f)
             
-            self.start_position = (track_data["start_position"][0] * self.tile_size, track_data["start_position"][1] * self.tile_size)
-            self.finish_position = (track_data["finish_position"][0] * self.tile_size, track_data["finish_position"][1] * self.tile_size)
             self.road_surface.fill((0, 0, 0, 0))
             self.track_pieces = {}
             
-            for piece in track_data["track_pieces"]:
+            # Load all pieces first
+            pieces_to_load = track_data["track_pieces"]
+            # Ensure finish piece is loaded last
+            pieces_to_load.sort(key=lambda x: x["type"] != "finish")
+            
+            for piece in pieces_to_load:
                 x, y = piece["position"]
                 pixel_x = x * self.tile_size
                 pixel_y = y * self.tile_size
                 piece_type = piece["type"]
                 rotation = piece["rotation"]
                 flipped = piece.get("flipped", False)
+                direction = piece.get("direction", piece_type)
                 
                 if piece_type == "straight":
                     rotated_piece = pygame.transform.rotate(self.straight, rotation)
@@ -390,10 +425,20 @@ class Road:
                 self.road_surface.blit(rotated_piece, (pixel_x, pixel_y))
                 self.track_pieces[(pixel_x, pixel_y)] = {
                     'type': piece_type,
-                    'direction': piece.get('direction', piece_type),
+                    'direction': direction,
                     'rotation': rotation,
                     'flipped': flipped
                 }
+
+            # Set positions after loading all pieces
+            self.start_position = (track_data["start_position"][0] * self.tile_size, 
+                                 track_data["start_position"][1] * self.tile_size)
+            self.finish_position = (track_data["finish_position"][0] * self.tile_size, 
+                                  track_data["finish_position"][1] * self.tile_size)
+
+            pygame.mixer.stop()
+            if self.track_music is not None:
+                self.track_music.play(-1)
             return True
         except (FileNotFoundError, IndexError, json.JSONDecodeError) as e:
             print(f"Error loading track: {e}")
