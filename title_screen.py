@@ -46,12 +46,12 @@ class TitleScreen:
         self.screen.fill(self.bg_color)
         
         # Draw banner
-        banner_scaled = pygame.transform.scale(self.banner, (400, 200))  # Adjust size as needed
+        banner_scaled = pygame.transform.scale(self.banner, (900, 300))  
         banner_rect = banner_scaled.get_rect(center=(self.width//2, self.height//4))
         self.screen.blit(banner_scaled, banner_rect)
         
-        # Draw play button with proper scaling
-        play_scaled = pygame.transform.scale(self.play, (128, 128))  # Fixed size
+
+        play_scaled = pygame.transform.scale(self.play, (256, 128)) 
         self.play_rect = play_scaled.get_rect(center=(self.width//2, self.height//2))
         self.screen.blit(play_scaled, self.play_rect)
         
