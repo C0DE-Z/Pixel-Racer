@@ -169,7 +169,7 @@ while running:
                         if not success:
                             print("Failed to load track")
                             draw_error_message("Failed to load track")
-                            pygame.time.wait(2000)  # Wait for 2 seconds to show the error message
+                            pygame.time.wait(2000) 
                             continue
                         
                         car_x, car_y = road.start_position
@@ -184,7 +184,7 @@ while running:
                     except Exception as e:
                         print(f"Error loading track: {e}")
                         draw_error_message(f"Error loading track: {e}")
-                        pygame.time.wait(2000)  # Wait for 2 seconds to show the error message
+                        pygame.time.wait(2000)  
                         continue
                 elif action == "new":
                     game_state = LOADING
@@ -201,10 +201,9 @@ while running:
             print("Starting road system...")
             road = Road(WORLD_SIZE)
             road.generate_road()
-            # Set initial car position to track start
+            # Set start car position to track start
             car_x, car_y = road.start_position
             car_rect.center = road.start_position
-            # Ensure the car faces the correct direction
             if road.track_pieces.get((car_x, car_y)):
                 piece = road.track_pieces[(car_x, car_y)]
                 if piece['type'] == 'straight':
@@ -291,33 +290,35 @@ while running:
     current_rotation_speed = car_base_rotation_speed / (1 + speed_factor * 2)
     current_rotation_speed = max(current_rotation_speed, car_min_rotation_speed)
 
+    # Pause the Game
     if keys[pygame.K_ESCAPE]:
         game_running = False
+    
+    # Reset the player
     if keys[pygame.K_r]:
         car_x, car_y = road.start_position
         car_rect.center = road.start_position
         car_velocity = 0
         car_angle = 0
         lap_count = 0
-        
-    if keys[pygame.K_q] and road.is_debug_visible():
-        # Redraw the map 
-        road.generate_road()
-
+    #Turn Right
     if keys[pygame.K_a] and car_velocity != 0:
         car_angle += current_rotation_speed
         drift_multiplier = 0.3 if keys[pygame.K_SPACE] else 0.1
         car_lateral_velocity += current_rotation_speed * drift_multiplier
+    #Turn Left
     if keys[pygame.K_d] and car_velocity != 0:
         car_angle -= current_rotation_speed
         drift_multiplier = 0.3 if keys[pygame.K_SPACE] else 0.1
         car_lateral_velocity -= current_rotation_speed * drift_multiplier
-
+    #Drift (ish)
     if keys[pygame.K_SPACE]:
         car_velocity *= 0.98
         current_rotation_speed *= 1.2
+    #Forward
     if keys[pygame.K_w]:
         car_velocity = min(car_velocity + gear_acceleration, current_max_speed)
+    #Backward
     elif keys[pygame.K_s]:
         car_velocity = max(car_velocity - gear_acceleration, -current_max_speed * 0.5)
     else:
@@ -382,51 +383,38 @@ while running:
                 game_state = WIN_SCREEN
         last_finish_check = crossed_finish
 
-    # Apply extra friction when off track
     if not road.is_on_track(car_x, car_y):
         car_velocity *= 0.97
 
-    # Clear screen with solid color first
-    screen.fill((34, 139, 34))  # Forest green background
-    
-    # Draw world and road in correct order
+    screen.fill((34, 139, 34))  
     screen.blit(world, (-camera_x, -camera_y))
     road.draw(screen, camera_x, camera_y, car_x, car_y)
-    
-    # Draw car last
     screen_car_x = car_x - camera_x
     screen_car_y = car_y - camera_y
     rotated_car, rotated_rect = rot_center(car_image, car_angle + 90, screen_car_x, screen_car_y)
     screen.blit(rotated_car, rotated_rect)
-
     speed_text = font.render(f"{int(calculate_mph(car_velocity))} MPH", True, (255, 255, 255))
     gear_text = font.render(f"GEAR: {current_gear}", True, (255, 255, 255))
     screen.blit(speed_text, (10, 10))
     screen.blit(gear_text, (10, 50))
-
     # Add lap counter to display
     lap_text = font.render(f"LAP: {lap_count}", True, (255, 255, 255))
     screen.blit(lap_text, (10, 90))
-
-    # Add to UI rendering
     if road.is_debug_visible():
         corner_text = font.render(f"Corner: {current_corner_type}", True, (255, 255, 255))
         screen.blit(corner_text, (10, 130))
 
-    # Replace the road piece rotation controls section with:
     nearest = road.get_nearest_piece(car_x, car_y)
     if nearest and (keys[pygame.K_LEFT] or keys[pygame.K_RIGHT]):
         pos, piece = nearest
         rotation_amount = 90 if keys[pygame.K_RIGHT] else -90
         road.rotate_piece_at_position(pos, rotation_amount)
             
-    # Add to UI rendering
     if race_start_time:  # Show ongoing race time
         current_race_time = (pygame.time.get_ticks() - race_start_time) / 1000.0
         time_text = font.render(f"Time: {current_race_time:.1f}s", True, (255, 255, 255))
         screen.blit(time_text, (10, 210))
 
-    # Show text only if debug is active
     if road.is_debug_visible():
         nearest = road.get_nearest_piece(car_x, car_y)
         if nearest:

@@ -5,7 +5,7 @@ import json
 
 # Creates the randomly made tracks for the car to drive on, and the start position of the car
 class Road:
-    def __init__(self, world_size):
+    def __init__(self, world_size, test_mode=False):
         self.world_size = world_size
         self.tile_size = 256 * 1.5
         self.road_surface = pygame.Surface((world_size, world_size), pygame.SRCALPHA)
@@ -48,7 +48,11 @@ class Road:
 
         print("Generating road layout...")
         self.load_config()
-        if not self.load_saved_track():
+        if test_mode:
+            from road_test_map import generate_test_track
+            test_track = generate_test_track()
+            self.load_saved_track(test_track)
+        elif not self.load_saved_track():
             self.generate_road()
         print("Road generation complete")
     

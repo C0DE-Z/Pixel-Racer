@@ -1,11 +1,11 @@
 {
     "corner_rotations": {
         "up_right": 0,
-        "right_down": 0, 
-        "down_left": 360,
+        "right_down": 0,
+        "down_left": 90,
         "left_up": 270,
         "right_up": 180,
-        "down_right": 0,
+        "down_right": 270,
         "left_down": 0,
         "up_left": 0,
         "down_up": 0,
@@ -16,7 +16,7 @@
     "corner_flips": {
         "up_right": false,
         "right_down": true,
-        "down_left": false,
+        "down_left": true,
         "left_up": false,
         "right_up": false,
         "down_right": false,

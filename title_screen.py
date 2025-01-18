@@ -20,6 +20,7 @@ class TitleScreen:
         self.screen = screen
         self.banner = pygame.image.load ('./assests/Banner.png')
         self.play = pygame.image.load("./assests/play.png")
+        self.play_rect = None  # Store the play button rect for click detection
         self.width = width
         self.height = height
         self.font = pygame.font.Font(None, 74)
@@ -53,9 +54,9 @@ class TitleScreen:
         self.screen.blit(self.banner, bannar_rect)
         # Draw start prompt
         
-        
-        play_rect = self.play.get_rect(center=(self.width//2, self.height//2))
-        self.screen.blit(self.play, play_rect)
+        pygame.transform.scale(self.play, (128, 128))
+        self.play_rect = self.play.get_rect(center=(self.width//2, self.height//2))
+        self.screen.blit(self.play, self.play_rect)
         
         # Draw controls
         for i, control in enumerate(self.controls):
@@ -74,6 +75,15 @@ class TitleScreen:
                 print(f"Error playing title screen music: {e}")
 
     def handle_input(self, event):
+        if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:  # Left click
+            # Check if click is within play button rect
+            if self.play_rect and self.play_rect.collidepoint(event.pos):
+                if self.TitleScreenMusic is not None:
+                    self.TitleScreenMusic.fadeout(250)
+                    pygame.time.wait(1000)
+                    pygame.mixer.stop()
+                    self.TitleScreenMusic.stop()
+                return True
         if event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
             # stop and fade out music when leaving title screen
             if self.TitleScreenMusic is not None:
