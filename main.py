@@ -80,17 +80,20 @@ current_corner_type = "up_right"
 corner_types = ["up_right", "right_down", "down_left", "left_up",
                 "right_up", "down_right", "left_down", "up_left"]
 
+
+# Menus
 MENU = 0
 LOADING = 1
 PLAYING = 2
 WIN_SCREEN = 3
-TRACK_LOADER = 4  # Add new state
+TRACK_LOADER = 4 
 
+# Menu Functions
 game_state = MENU
 title_screen = TitleScreen(screen, WIDTH, HEIGHT)
 win_screen = WinScreen(screen, WIDTH, HEIGHT)
 track_loader = TrackLoader(screen, WIDTH, HEIGHT)
-
+# Lap counter
 lap_count = 0
 LAPS_TO_COMPLETE = 3
 race_start_time = None
@@ -102,15 +105,10 @@ def calculate_mph(velocity):
 def handle_drift(velocity, lateral_velocity, angle, grip, drift_input):
     if drift_input:
         grip *= 0.4  
-        lateral_velocity *= 1.2  # Increase side slip
+        lateral_velocity *= 1.2  # increase side slip
         
-    # Apply grip to lateral velocity with momentum preservation
     lateral_velocity *= grip
-    
-    # Calculate total velocity vector
     total_velocity = math.sqrt(velocity**2 + lateral_velocity**2)
-    
-    # Limit total velocity with drift consideration
     max_speed_with_drift = car_max_speed * (0.8 if drift_input else 1.0)
     if total_velocity > max_speed_with_drift:
         ratio = max_speed_with_drift / total_velocity

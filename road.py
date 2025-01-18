@@ -2,7 +2,8 @@ import pygame
 import random
 import math
 import json
-
+import time
+import os
 # Creates the randomly made tracks for the car to drive on, and the start position of the car
 class Road:
     def __init__(self, world_size, test_mode=False):
@@ -126,74 +127,78 @@ class Road:
         return True
 
     def generate_road(self):
+        # clear the surface
         self.road_surface.fill((0, 0, 0, 0))
-        grid_size = self.world_size // self.tile_size
-        max_attempts = math.inf  # Limit the number of attempts (for testing)
+        grid_size = self.world_size // self.tile_size  # Calculate grid size based on world size
+        max_attempts = math.inf  # Keep trying until we get a valid track
         attempts = 0
 
         while attempts < max_attempts:
             try:
-                track_points = []
-                self.occupied_cells = set()
+                track_points = []  # Will store all points that make up the track
+                self.occupied_cells = set()  # Keep track of used cells to avoid overlaps
                 
+                # Start position is offset from edge to allow room for track
                 start_x = grid_size // 4 + 5
                 start_y = grid_size // 4 + 5
-                current_x = start_x
-                current_y = start_y
+                current_x, current_y = start_x, start_y
                 
-                num_segments = random.randint(10, 15)  # Increase the number of segments
-                direction = random.randint(0, 3)
+                # Generate multiple segments to create track
+                num_segments = random.randint(10, 15)  # Number of major track sections
+                direction = random.randint(0, 3)  # Initial random direction (0=up, 1=right, 2=down, 3=left)
                 
                 for _ in range(num_segments):
-                    segment_length = random.randint(3, 8)  # Shorten segment lengths
+                    segment_length = random.randint(3, 8)
                     for _ in range(segment_length):
                         track_points.append((current_x, current_y))
-                        if direction == 0:
-                            current_y -= 1
-                        elif direction == 1:
-                            current_x += 1
-                        elif direction == 2:
-                            current_y += 1
-                        else:
-                            current_x -= 1
+                        # move in current direction
+                        if direction == 0: current_y -= 1      # Up
+                        elif direction == 1: current_x += 1    # Right
+                        elif direction == 2: current_y += 1    # Down
+                        else: current_x -= 1                   # Left
                         
+                        # check if were still within bounds
                         if not (0 <= current_x < grid_size and 0 <= current_y < grid_size):
-                            raise ValueError("Track went off screen")
+                            raise ValueError("Track went off screen bounds")
                     
-                    # Increase the likelihood of turns
+                    
+                    # weights [3,1,3] high chance to turn left or right, low chance to go straight
                     turn_choice = random.choices([-1, 0, 1], weights=[3, 1, 3])[0]
-                    direction = (direction + turn_choice) % 4
+                    direction = (direction + turn_choice) % 4  
                 
+                # Try to connect back to start
                 if not self.connect_to_start(track_points, start_x, start_y, current_x, current_y):
                     print(f"Failed to connect track to start, attempt {attempts + 1}")
                     attempts += 1
                     continue
 
+                # Verify track is valid (connected, not too short)
                 if not self.is_valid_track(track_points, start_x, start_y):
-                    #print(f"Invalid track generated, attempt {attempts + 1}")
                     attempts += 1
                     continue
 
+                # Place all track pieces and save the track
                 self.place_track_pieces(track_points)
-                # Only save track when generating new one, not when loading
+                
                 self.store_valid_track(track_points)
                 print(f"Valid track generated after {attempts + 1} attempts")
                 
-                # Stop any existing music before playing new track music
+                # start playing track music
                 pygame.mixer.stop()
                 if self.track_music is not None:
-                    self.track_music.play(-1)  # Loop indefinitely
+                    self.track_music.play(-1)
                 return True
 
             except ValueError as e:
-                #print(f"Track generation failed: {e}")
                 attempts += 1
                 continue
 
         print(f"Failed to generate valid track after {max_attempts} attempts")
         return False
 
+    # generate the connection points from the end to start
     def connect_to_start(self, track_points, start_x, start_y, current_x, current_y):
+        # Capped due to crashs some times happening where its impossible
         max_connect_attempts = 50
         attempt = 0
         
@@ -205,16 +210,20 @@ class Road:
                 
             next_x, next_y = current_x, current_y
             
+            # diagonally
             if abs(current_x - start_x) > 0 and abs(current_y - start_y) > 0:
                 test_x = current_x + (-1 if current_x > start_x else 1)
                 test_y = current_y + (-1 if current_y > start_y else 1)
                 if (test_x, test_y) not in self.occupied_cells:
                     next_x, next_y = test_x, test_y
+            # X direction
             elif abs(current_x - start_x) > abs(current_y - start_y):
                 next_x += -1 if current_x > start_x else 1
+            # Y direction
             else:
                 next_y += -1 if current_y > start_y else 1
                 
+            # If next position is valid move there
             if (next_x, next_y) not in self.occupied_cells:
                 track_points.append((next_x, next_y))
                 self.occupied_cells.add((next_x, next_y))
@@ -224,6 +233,7 @@ class Road:
 
         raise ValueError("Unable to connect track to start")
 
+    
     def place_track_pieces(self, track_points):
         self.start_position = (track_points[0][0] * self.tile_size + self.tile_size // 2,
                              track_points[0][1] * self.tile_size + self.tile_size // 2)
@@ -312,14 +322,15 @@ class Road:
 
         screen.blit(self.road_surface, (-camera_x, -camera_y))
 
-    # Check if the car has crossed the finish line
+    # check if the car has crossed the finish line
     def check_finish_line(self, car_x, car_y):
         if self.finish_position:
             finish_x, finish_y = self.finish_position
             distance = math.sqrt((car_x - finish_x)**2 + (car_y - finish_y)**2)
             return distance < self.tile_size // 2
         return False
-    # Get the closest track piece to the car used for dev tools 
+    
+    # get the closest track piece to the car used for dev tools 
     def get_nearest_piece(self, car_x, car_y):
         nearest = None
         min_dist = float('inf')
@@ -363,13 +374,14 @@ class Road:
         center_y = cell_y + self.tile_size / 2
         dx = x - center_x
         dy = y - center_y
+        
         distance = math.sqrt(dx*dx + dy*dy)
         
         return distance <= (self.tile_size * 0.6)
 
     def store_valid_track(self, track_points):
-        import time
-        import os
+        
+        print("Attemping to save track (Please dont crash)")
         os.makedirs('./assests/tracks', exist_ok=True)
         
         track_data = {
@@ -402,10 +414,9 @@ class Road:
             self.road_surface.fill((0, 0, 0, 0))
             self.track_pieces = {}
             
-            # Load all pieces first
+            # load all pieces first (Not super optimal but its faster when running )
             pieces_to_load = track_data["track_pieces"]
-            # Ensure finish piece is loaded last
-            pieces_to_load.sort(key=lambda x: x["type"] != "finish")
+
             
             for piece in pieces_to_load:
                 x, y = piece["position"]
@@ -434,7 +445,7 @@ class Road:
                     'flipped': flipped
                 }
 
-            # Set positions after loading all pieces
+            # set positions after loading all pieces
             self.start_position = (track_data["start_position"][0] * self.tile_size, 
                                  track_data["start_position"][1] * self.tile_size)
             self.finish_position = (track_data["finish_position"][0] * self.tile_size, 

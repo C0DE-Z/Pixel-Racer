@@ -3,7 +3,8 @@ import os
 import json
 
 class TrackLoader:
-    def __init__(self, screen, width, height):
+    def __init__(self, screen, width, height): # Constructor to store all variables
+        
         self.screen = screen
         self.width = width
         self.height = height
@@ -15,7 +16,10 @@ class TrackLoader:
         self.tracks_dir = './assests/tracks'
         self.tracks = self.load_tracks()
         self.selected_track = 0
-
+        
+        self.moveCursor = './assests/sfx/select.wav'
+        self.moveCursorSound = pygame.mixer.Sound(self.moveCursor)
+    # Functoin to get all tracks
     def load_tracks(self):
         track_files = []
         try:
@@ -25,6 +29,7 @@ class TrackLoader:
         except Exception as e:
             print(f"Error loading tracks: {e}")
         return track_files
+
 
     def draw(self):
         self.screen.fill(self.bg_color)
@@ -51,8 +56,11 @@ class TrackLoader:
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_UP:
                 self.selected_track = (self.selected_track - 1) % len(self.tracks)
+                self.moveCursorSound.play()
             elif event.key == pygame.K_DOWN:
                 self.selected_track = (self.selected_track + 1) % len(self.tracks)
+                # Play sound
+                self.moveCursorSound.play()
             elif event.key == pygame.K_RETURN and self.tracks:
                 return "load", self.tracks[self.selected_track]
             elif event.key == pygame.K_n:
