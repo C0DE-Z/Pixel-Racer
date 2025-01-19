@@ -45,14 +45,14 @@ class TitleScreen:
     def draw(self):
         self.screen.fill(self.bg_color)
         
-        # Draw banner
-        banner_scaled = pygame.transform.scale(self.banner, (900, 300))  
+        # Draw banner with proper scaling
+        banner_scaled = pygame.transform.scale(self.banner, (900, 300))
         banner_rect = banner_scaled.get_rect(center=(self.width//2, self.height//4))
         self.screen.blit(banner_scaled, banner_rect)
         
-
-        play_scaled = pygame.transform.scale(self.play, (256, 128)) 
-        self.play_rect = play_scaled.get_rect(center=(self.width//2, self.height//2))
+        # Create and store the scaled play button
+        play_scaled = pygame.transform.scale(self.play, (256, 128))
+        self.play_rect = play_scaled.get_rect(center=(self.width//2, self.height//1.5))
         self.screen.blit(play_scaled, self.play_rect)
         
         # Draw controls
@@ -72,22 +72,21 @@ class TitleScreen:
                 print(f"Error playing title screen music: {e}")
 
     def handle_input(self, event):
-        if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:  # Left click
-            mouse_pos = pygame.mouse.get_pos()
-            if self.play_rect and self.play_rect.collidepoint(mouse_pos):
-                print("Play button clicked!")  # Debug print
+        if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+            # Get mouse position and check if it's within the play button bounds
+            mouse_x, mouse_y = pygame.mouse.get_pos()
+            button_x = self.width // 2
+            button_y = self.height // 2
+            button_width = 256
+            button_height = 128
+            
+            # Check if click is within button bounds
+            if (button_x - button_width//2 <= mouse_x <= button_x + button_width//2 and
+                button_y - button_height//2 <= mouse_y <= button_y + button_height//2):
                 if self.TitleScreenMusic is not None:
                     self.TitleScreenMusic.fadeout(250)
                     pygame.time.wait(1000)
                     pygame.mixer.stop()
                     self.TitleScreenMusic.stop()
                 return True
-        if event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
-            # stop and fade out music when leaving title screen
-            if self.TitleScreenMusic is not None:
-                self.TitleScreenMusic.fadeout(250)  
-                pygame.time.wait(1000)  
-                pygame.mixer.stop()  
-                self.TitleScreenMusic.stop() 
-            return True
         return False

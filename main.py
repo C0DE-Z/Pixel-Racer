@@ -144,7 +144,8 @@ while running:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
-            elif event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
+            # Remove the spacebar check and use title screen's handle_input
+            if title_screen.handle_input(event):
                 game_state = TRACK_LOADER
 
         title_screen.draw()
