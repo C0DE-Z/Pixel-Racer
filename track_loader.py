@@ -19,6 +19,7 @@ class TrackLoader:
         
         self.moveCursor = './assests/sfx/select.wav'
         self.moveCursorSound = pygame.mixer.Sound(self.moveCursor)
+        self.start = pygame.mixer.Sound("./assests/sfx/start.wav")
     # Functoin to get all tracks
     def load_tracks(self):
         track_files = []
@@ -48,21 +49,24 @@ class TrackLoader:
             no_tracks_rect = no_tracks_text.get_rect(center=(self.width // 2, self.height // 2))
             self.screen.blit(no_tracks_text, no_tracks_rect)
 
-        instructions = self.small_font.render("Press ENTER to load / N for new track", True, self.text_color)
+        instructions = self.small_font.render("Press ENTER to load & N for new track & Use arrows keys or W and S to scroll", True, self.text_color)
         instructions_rect = instructions.get_rect(center=(self.width // 2, self.height - 50))
         self.screen.blit(instructions, instructions_rect)
 
     def handle_input(self, event):
         if event.type == pygame.KEYDOWN:
-            if event.key == pygame.K_UP:
+            if event.key == pygame.K_UP or event.key == pygame.K_w:
                 self.selected_track = (self.selected_track - 1) % len(self.tracks)
                 self.moveCursorSound.play()
-            elif event.key == pygame.K_DOWN:
+            elif event.key == pygame.K_DOWN or event.key == pygame.K_s:
                 self.selected_track = (self.selected_track + 1) % len(self.tracks)
                 # Play sound
                 self.moveCursorSound.play()
             elif event.key == pygame.K_RETURN and self.tracks:
+                self.start.play()
                 return "load", self.tracks[self.selected_track]
+            
             elif event.key == pygame.K_n:
+                self.start.play()
                 return "new", None
         return None, None

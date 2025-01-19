@@ -41,10 +41,10 @@ car_angle = 0
 car_velocity = 0
 car_acceleration = 0.1
 car_max_speed = 12
-car_friction = 0.98
+car_friction = 0.995  # Was 0.98 - Less friction for longer slides
 car_rotation_speed = 3.5
-car_drift_factor = 0.95
-car_grip = 0.92  
+car_drift_factor = 0.99  # Was 0.95 - Higher value means longer drifts
+car_grip = 0.85  # Was 0.92 - Lower value means more sliding
 car_base_rotation_speed = 4.0  
 car_min_rotation_speed = 0.3   
 
@@ -104,12 +104,12 @@ def calculate_mph(velocity):
 
 def handle_drift(velocity, lateral_velocity, angle, grip, drift_input):
     if drift_input:
-        grip *= 0.4  
-        lateral_velocity *= 1.2  # increase side slip
+        grip *= 0.2  # Was 0.4 - Much less grip while drifting
+        lateral_velocity *= 1.4  # Was 1.2 - More sideways momentum
         
     lateral_velocity *= grip
     total_velocity = math.sqrt(velocity**2 + lateral_velocity**2)
-    max_speed_with_drift = car_max_speed * (0.8 if drift_input else 1.0)
+    max_speed_with_drift = car_max_speed * (0.9 if drift_input else 1.0)  # Was 0.8 - Less speed loss in drift
     if total_velocity > max_speed_with_drift:
         ratio = max_speed_with_drift / total_velocity
         velocity *= ratio
@@ -303,17 +303,17 @@ while running:
     #Turn Right
     if keys[pygame.K_a] and car_velocity != 0:
         car_angle += current_rotation_speed
-        drift_multiplier = 0.3 if keys[pygame.K_SPACE] else 0.1
+        drift_multiplier = 0.5 if keys[pygame.K_SPACE] else 0.1  # Was 0.3 - More sideways force
         car_lateral_velocity += current_rotation_speed * drift_multiplier
     #Turn Left
     if keys[pygame.K_d] and car_velocity != 0:
         car_angle -= current_rotation_speed
-        drift_multiplier = 0.3 if keys[pygame.K_SPACE] else 0.1
+        drift_multiplier = 0.5 if keys[pygame.K_SPACE] else 0.1  # Was 0.3 - More sideways force
         car_lateral_velocity -= current_rotation_speed * drift_multiplier
     #Drift (ish)
     if keys[pygame.K_SPACE]:
-        car_velocity *= 0.98
-        current_rotation_speed *= 1.2
+        car_velocity *= 0.99  # Was 0.98 - Less speed loss during drift
+        current_rotation_speed *= 1.4  # Was 1.2 - More rotation control in drift
     #Forward
     if keys[pygame.K_w]:
         car_velocity = min(car_velocity + gear_acceleration, current_max_speed)

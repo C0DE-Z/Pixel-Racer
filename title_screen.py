@@ -52,7 +52,7 @@ class TitleScreen:
         
         # Create and store the scaled play button
         play_scaled = pygame.transform.scale(self.play, (256, 128))
-        self.play_rect = play_scaled.get_rect(center=(self.width//2, self.height//1.5))
+        self.play_rect = play_scaled.get_rect(center=(self.width//2, self.height//2))
         self.screen.blit(play_scaled, self.play_rect)
         
         # Draw controls
