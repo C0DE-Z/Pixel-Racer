@@ -20,7 +20,7 @@ class TitleScreen:
         self.screen = screen
         self.banner = pygame.image.load ('./assests/Banner.png')
         self.play = pygame.image.load("./assests/play.png")
-        self.play_rect = None  # Store the play button rect for click detection
+        self.play_rect = None  # store the play button rect for click detection
         self.width = width
         self.height = height
         self.font = pygame.font.Font(None, 74)
@@ -52,7 +52,7 @@ class TitleScreen:
         
         # Create and store the scaled play button
         play_scaled = pygame.transform.scale(self.play, (256, 128))
-        self.play_rect = play_scaled.get_rect(center=(self.width//2, self.height//2))
+        self.play_rect = play_scaled.get_rect(center=(self.width // 2, self.height//1.5))
         self.screen.blit(play_scaled, self.play_rect)
         
         # Draw controls
@@ -73,10 +73,9 @@ class TitleScreen:
 
     def handle_input(self, event):
         if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
-            # Get mouse position and check if it's within the play button bounds
             mouse_x, mouse_y = pygame.mouse.get_pos()
             button_x = self.width // 2
-            button_y = self.height // 2
+            button_y = self.height // 1.5
             button_width = 256
             button_height = 128
             

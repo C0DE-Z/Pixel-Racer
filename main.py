@@ -289,9 +289,15 @@ while running:
     current_rotation_speed = car_base_rotation_speed / (1 + speed_factor * 2)
     current_rotation_speed = max(current_rotation_speed, car_min_rotation_speed)
 
-    # Pause the Game
+    # Pause the Game - Replace this section
     if keys[pygame.K_ESCAPE]:
-        game_running = False
+        # Reset car position and game state
+        car_velocity = 0
+        car_lateral_velocity = 0
+        lap_count = 0
+        race_start_time = None
+        game_state = TRACK_LOADER
+        continue
     
     # Reset the player
     if keys[pygame.K_r]:
