@@ -1,7 +1,3 @@
-# Nicholas Melo 
-# Pixel Racer - A 2D racing game with pixel art style
-# 2025-01-17
-# Comp sci Period 2
 
 # Run main.py to run the game
 
