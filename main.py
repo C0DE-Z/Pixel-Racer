@@ -1,7 +1,4 @@
-# Nicholas Melo 
-# Pixel Racer - A 2D racing game with pixel art style
-# 2025-01-17
-# Comp sci Period 2
+
 
 # Run main.py to run the game
 
@@ -289,7 +286,7 @@ while running:
     current_rotation_speed = car_base_rotation_speed / (1 + speed_factor * 2)
     current_rotation_speed = max(current_rotation_speed, car_min_rotation_speed)
 
-    # Pause the Game - Replace this section
+    # Pause the Game 
     if keys[pygame.K_ESCAPE]:
         # Reset car position and game state
         car_velocity = 0
@@ -309,17 +306,17 @@ while running:
     #Turn Right
     if keys[pygame.K_a] and car_velocity != 0:
         car_angle += current_rotation_speed
-        drift_multiplier = 0.8 if keys[pygame.K_SPACE] else 0.1  # Was 0.5 - Much stronger sideways force
+        drift_multiplier = 0.8 if keys[pygame.K_SPACE] else 0.1  
         car_lateral_velocity += current_rotation_speed * drift_multiplier
     #Turn Left
     if keys[pygame.K_d] and car_velocity != 0:
         car_angle -= current_rotation_speed
-        drift_multiplier = 0.8 if keys[pygame.K_SPACE] else 0.1  # Was 0.5 - Much stronger sideways force
+        drift_multiplier = 0.8 if keys[pygame.K_SPACE] else 0.1 
         car_lateral_velocity -= current_rotation_speed * drift_multiplier
     #Drift (ish)
     if keys[pygame.K_SPACE]:
-        car_velocity *= 0.995  # Was 0.99 - Even less speed loss
-        current_rotation_speed *= 1.8  # Was 1.4 - Much more rotation in drift
+        car_velocity *= 0.995  
+        current_rotation_speed *= 1.8  
     #Forward
     if keys[pygame.K_w]:
         car_velocity = min(car_velocity + gear_acceleration, current_max_speed)
