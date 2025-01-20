@@ -184,7 +184,7 @@ class Road:
                 # start playing track music
                 pygame.mixer.stop()
                 if self.track_music is not None:
-                    self.track_music.play(-1) # Make it loop
+                    self.track_music.play(-1)
                 return True
 
             except ValueError as e:

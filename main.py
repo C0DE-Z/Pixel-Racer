@@ -1,4 +1,5 @@
 
+
 # Run main.py to run the game
 
 import pygame
@@ -54,6 +55,9 @@ car_lateral_velocity = 0
 
 font = pygame.font.Font(None, 36)
 
+# Add a variable to toggle manual/automatic transmission
+manual_mode = True  # Default to manual mode
+
 # Add after other car variables
 gear_shift_cooldown = 0
 gear_shift_delay = 15  # frames
@@ -76,6 +80,24 @@ current_corner_type = "up_right"
 corner_types = ["up_right", "right_down", "down_left", "left_up",
                 "right_up", "down_right", "left_down", "up_left"]
 
+# Add a function to handle automatic gear shifting
+def automatic_gear_shift():
+    global current_gear, gear_shift_cooldown, car_velocity  # Add car_velocity to global variables
+    current_speed_mph = calculate_mph(car_velocity)
+    
+    if gear_shift_cooldown > 0:
+        gear_shift_cooldown -= 1
+        return
+    
+    if current_gear < max_gears and current_speed_mph > gear_efficiency_ranges[current_gear][1]:
+        current_gear += 1
+        gear_shift_cooldown = gear_shift_delay
+        print(f"Automatically shifted up to gear {current_gear}")
+    elif current_gear > 1 and current_speed_mph < gear_efficiency_ranges[current_gear][0]:
+        car_velocity *= downshift_speed_retention
+        current_gear -= 1
+        gear_shift_cooldown = gear_shift_delay
+        print(f"Automatically shifted down to gear {current_gear}")
 
 # Menus
 MENU = 0
@@ -255,15 +277,17 @@ while running:
                 gear_shift_cooldown = gear_shift_delay
                 print(f"Shifted down to gear {current_gear}")
 
+            # Toggle manual/automatic mode
+            elif event.key == pygame.K_m:
+                manual_mode = not manual_mode
+                mode = "Manual" if manual_mode else "Automatic"
+                print(f"Transmission mode switched to {mode}")
+
             # Corner rotation controls
             if event.key == pygame.K_TAB:
                 # Cycle through corner types
                 current_index = corner_types.index(current_corner_type)
                 current_corner_type = corner_types[(current_index + 1) % len(corner_types)]
-            elif event.key == pygame.K_LEFT:
-                road.adjust_rotation(current_corner_type, -90)
-            elif event.key == pygame.K_RIGHT:
-                road.adjust_rotation(current_corner_type, 90)
             elif event.key == pygame.K_f:
                 road.toggle_flip(current_corner_type)
             elif event.key == pygame.K_h:
@@ -285,7 +309,7 @@ while running:
     current_rotation_speed = car_base_rotation_speed / (1 + speed_factor * 2)
     current_rotation_speed = max(current_rotation_speed, car_min_rotation_speed)
 
-    # Pause the Game 
+    # Pause the Game - Replace this section
     if keys[pygame.K_ESCAPE]:
         # Reset car position and game state
         car_velocity = 0
@@ -303,24 +327,24 @@ while running:
         car_angle = 0
         lap_count = 0
     #Turn Right
-    if keys[pygame.K_a] and car_velocity != 0:
+    if (keys[pygame.K_a] or keys[pygame.K_LEFT]) and car_velocity != 0:
         car_angle += current_rotation_speed
-        drift_multiplier = 0.8 if keys[pygame.K_SPACE] else 0.1  
+        drift_multiplier = 0.8 if keys[pygame.K_SPACE] else 0.1  # Was 0.5 - Much stronger sideways force
         car_lateral_velocity += current_rotation_speed * drift_multiplier
     #Turn Left
-    if keys[pygame.K_d] and car_velocity != 0:
+    if (keys[pygame.K_d] or keys[pygame.K_RIGHT]) and car_velocity != 0:
         car_angle -= current_rotation_speed
-        drift_multiplier = 0.8 if keys[pygame.K_SPACE] else 0.1 
+        drift_multiplier = 0.8 if keys[pygame.K_SPACE] else 0.1  # Was 0.5 - Much stronger sideways force
         car_lateral_velocity -= current_rotation_speed * drift_multiplier
     #Drift (ish)
     if keys[pygame.K_SPACE]:
-        car_velocity *= 0.995  
-        current_rotation_speed *= 1.8  
+        car_velocity *= 0.995  # Was 0.99 - Even less speed loss
+        current_rotation_speed *= 1.8  # Was 1.4 - Much more rotation in drift
     #Forward
-    if keys[pygame.K_w]:
+    if keys[pygame.K_w] or keys[pygame.K_UP]:
         car_velocity = min(car_velocity + gear_acceleration, current_max_speed)
     #Backward
-    elif keys[pygame.K_s]:
+    elif keys[pygame.K_s] or keys[pygame.K_DOWN]:
         car_velocity = max(car_velocity - gear_acceleration, -current_max_speed * 0.5)
     else:
         car_velocity *= car_friction
@@ -329,6 +353,10 @@ while running:
         car_velocity, car_lateral_velocity, car_angle, 
         car_grip, keys[pygame.K_SPACE]
     )
+
+    # Handle automatic gear shifting if not in manual mode
+    if not manual_mode:
+        automatic_gear_shift()
 
     # Get current gear efficiency
     min_speed, max_speed = gear_efficiency_ranges[current_gear]
@@ -408,8 +436,8 @@ while running:
     nearest = road.get_nearest_piece(car_x, car_y)
     if nearest and (keys[pygame.K_LEFT] or keys[pygame.K_RIGHT]):
         pos, piece = nearest
-        rotation_amount = 90 if keys[pygame.K_RIGHT] else -90
-        road.rotate_piece_at_position(pos, rotation_amount)
+        ##rotation_amount = 90 if keys[pygame.K_RIGHT] else -90
+        ##road.rotate_piece_at_position(pos, rotation_amount)
             
     if race_start_time:  # Show ongoing race time
         current_race_time = (pygame.time.get_ticks() - race_start_time) / 1000.0
